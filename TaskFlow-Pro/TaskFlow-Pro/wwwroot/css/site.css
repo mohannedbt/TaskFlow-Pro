@@ -1,22 +1,68 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+:root {
+    --primary: #4f46e5;      /* Indigo 600 */
+    --primary-light: #eef2ff;
+    --slate-50: #f8fafc;
+    --slate-200: #e2e8f0;
+    --slate-600: #475569;
+    --slate-900: #0f172a;
 }
 
 body {
-  margin-bottom: 60px;
+    background-color: #fcfcfd;
+    font-family: 'Inter', -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+}
+
+/* Glass Sidebar */
+.sidebar {
+    background: white;
+    border-right: 1px solid var(--slate-200);
+    width: 280px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Professional Table/List Hybrid */
+.task-row {
+    background: white;
+    border: 1px solid var(--slate-200);
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.task-row:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+}
+
+/* Elegant Status Pills */
+.status-pill {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-todo { background: #f1f5f9; color: #475569; }
+.status-progress { background: #fef3c7; color: #92400e; }
+.status-done { background: #dcfce7; color: #166534; }
+
+/* Custom Action Button */
+.btn-action {
+    background: white;
+    border: 1px solid var(--slate-200);
+    color: var(--slate-600);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.btn-action:hover {
+    background: var(--slate-50);
+    color: var(--primary);
+    border-color: var(--primary);
 }

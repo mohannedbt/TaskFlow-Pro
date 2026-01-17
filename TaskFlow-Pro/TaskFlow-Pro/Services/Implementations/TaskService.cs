@@ -1,0 +1,85 @@
+﻿using TaskFlow_Pro.Models;
+using TaskFlow_Pro.Repositories.Interfaces;
+using TaskFlow_Pro.Services.Interfaces;
+
+namespace TaskFlow_Pro.Services.Implementations;
+
+public class TaskService : ITaskService
+{
+    public ITaskRepository _Taskrepo;
+    public ApplicationDbContext _context;
+    
+    private static readonly Dictionary<State, HashSet<State>> AllowedTransitions =
+        new()
+        {
+            { State.NotAssigned, new() { State.Ongoing } },
+
+            { State.Ongoing, new()
+                {
+                    State.Interrupted,
+                    State.Completed
+                }
+            },
+
+            { State.Interrupted, new()
+                {
+                    State.Ongoing,
+                    State.Canceled
+                }
+            },
+
+            { State.Completed, new() },
+            { State.Canceled, new() }
+        };
+
+
+    public TaskService(ITaskRepository repo, ApplicationDbContext context)
+    {
+        _Taskrepo = repo;
+        _context = context;
+        
+    }
+
+    public async Task<List<TaskItem>> SearchTasksAsync(string q)
+    {
+        return await _Taskrepo.SearchTasksAsync(q);
+    }
+
+    public async Task<TaskItem> CreateTaskAsync(string title, string description, string creatorUserId,DateTime startDate, DateTime endDate)
+    {
+
+    TaskItem item=new TaskItem();
+    item.Title=title;
+    item.StartDate=startDate;
+    item.EndDate=endDate;
+    item.Description=description;
+    item.CreatorById=creatorUserId;
+    item.State=State.NotAssigned;
+    await _Taskrepo.AddAsync(item);
+    return item;
+    }
+
+    public async  Task<List<TaskItem>> GetAllTasksAsync()
+    {
+        return await _Taskrepo.GetAllAsync();
+    }
+
+
+public async Task AssignTaskAsync(int taskId, ApplicationUser assignedUser)
+{
+    TaskItem taskItem = await _Taskrepo.GetByIdAsync(taskId);
+    taskItem.AssignedTo=assignedUser;
+    await _Taskrepo.UpdateAsync(taskItem);
+}
+
+public async Task ChangeTaskStateAsync(int taskId, State newState, string actingUserId)
+    {
+        TaskItem taskItem= await _Taskrepo.GetByIdAsync(taskId);
+        if (AllowedTransitions[taskItem.State].Contains(newState))
+        {
+            taskItem.State=newState;
+            await _Taskrepo.UpdateAsync(taskItem);
+        }
+    }
+    
+}

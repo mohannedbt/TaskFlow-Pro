@@ -1,0 +1,169 @@
+﻿@model IEnumerable<TaskFlow_Pro.Models.TaskItem>
+
+@{
+    ViewData["Title"] = "Task Board";
+}
+
+<!-- 🔍 SEARCH -->
+<form asp-action="Index" method="get" class="d-flex gap-2 mb-4">
+    <input type="text"
+           name="q"
+           value="@ViewBag.SearchQuery"
+           class="form-control form-control-sm"
+           placeholder="Search tasks..."
+           style="max-width: 240px;" />
+    <button class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-search"></i>
+    </button>
+</form>
+
+<div class="container-fluid px-5">
+
+@foreach (var task in Model)
+{
+    <div class="bg-white shadow-sm border rounded-4 px-4 py-3 mb-3">
+        <div class="row align-items-center">
+
+            <!-- TASK INFO -->
+            <div class="col-lg-4">
+                <div class="fw-bold">@task.Title</div>
+                <div class="text-muted small">#TF-@task.Id.ToString("D4")</div>
+            </div>
+
+            <!-- STATE BADGE -->
+            <div class="col-lg-2 text-center">
+                @{
+                    var badge = task.State switch
+                    {
+                        State.Completed   => "bg-success",
+                        State.Canceled    => "bg-danger",
+                        State.Interrupted => "bg-warning text-dark",
+                        State.Ongoing     => "bg-primary",
+                        _                 => "bg-secondary"
+                    };
+                }
+                <span class="badge @badge px-4 py-2 fs-6 fw-bold rounded-pill">
+                    @task.State
+                </span>
+            </div>
+
+            <!-- TIMELINE -->
+            <div class="col-lg-3 text-center text-muted small">
+                <i class="bi bi-calendar3 me-1"></i>
+                @task.StartDate.ToString("MMM dd") —
+                @task.EndDate.ToString("MMM dd")
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="col-lg-3 text-end">
+
+@if (task.State == State.Completed || task.State == State.Canceled)
+{
+    <span class="text-muted fst-italic small">
+        <i class="bi bi-lock-fill me-1"></i> Final state
+    </span>
+}
+else
+{
+    <div class="d-inline-flex gap-2 align-items-center">
+
+        <!-- TOGGLE ONGOING / INTERRUPTED -->
+        @if (task.State == State.Ongoing)
+        {
+            <form asp-action="ChangeState" method="post">
+                <input type="hidden" name="id" value="@task.Id" />
+                <input type="hidden" name="newState" value="Interrupted" />
+                <button class="btn btn-sm btn-outline-warning">
+                    <i class="bi bi-pause-circle"></i> Interrupt
+                </button>
+            </form>
+        }
+        else if (task.State == State.Interrupted)
+        {
+            <form asp-action="ChangeState" method="post">
+                <input type="hidden" name="id" value="@task.Id" />
+                <input type="hidden" name="newState" value="Ongoing" />
+                <button class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-play-circle"></i> Resume
+                </button>
+            </form>
+        }
+
+        <!-- COMPLETE -->
+        @if (task.State == State.Ongoing)
+        {
+            <form asp-action="ChangeState" method="post">
+                <input type="hidden" name="id" value="@task.Id" />
+                <input type="hidden" name="newState" value="Completed" />
+                <button class="btn btn-sm btn-success">
+                    <i class="bi bi-check-circle"></i>
+                </button>
+            </form>
+        }
+
+        <!-- CANCEL -->
+        @if (task.State == State.Interrupted)
+        {
+            <form asp-action="ChangeState"
+                  method="post"
+                  onsubmit="return confirmCancel();">
+                <input type="hidden" name="id" value="@task.Id" />
+                <input type="hidden" name="newState" value="Canceled" />
+                <button class="btn btn-sm btn-danger">
+                    <i class="bi bi-x-circle"></i>
+                </button>
+            </form>
+        }
+
+        <!-- INFO OVERLAY -->
+        <button class="btn btn-sm btn-outline-secondary"
+                data-bs-toggle="modal"
+                data-bs-target="#infoOverlay-@task.Id">
+            <i class="bi bi-info-circle"></i>
+        </button>
+    </div>
+}
+
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY MODAL -->
+    <div class="modal fade" id="infoOverlay-@task.Id" tabindex="-1">
+        <div class="modal-dialog modal-fullscreen-sm-down modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow-lg">
+                <div class="modal-header">
+                    <h4 class="fw-bold">@task.Title</h4>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted fs-5">@task.Description</p>
+                    <hr />
+                    <div class="row text-muted small">
+                        <div class="col">
+                            <strong>State:</strong> @task.State
+                        </div>
+                        <div class="col">
+                            <strong>Start:</strong> @task.StartDate.ToShortDateString()
+                        </div>
+                        <div class="col">
+                            <strong>End:</strong> @task.EndDate.ToShortDateString()
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+</div>
+
+@section Scripts {
+<script>
+    function confirmCancel() {
+        return confirm(
+            "Are you REALLY sure you want to cancel this task?\n\nThis action is permanent."
+        );
+    }
+</script>
+}

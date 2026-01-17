@@ -1,0 +1,96 @@
+﻿@model TaskFlow_Pro.Models.CreateTaskViewModel
+
+@{
+    ViewData["Title"] = "Create New Task";
+}
+
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="mb-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <a asp-action="Index" class="text-decoration-none text-muted small fw-medium mb-2 d-block">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                    <h2 class="fw-bold text-slate-900 m-0">Create New Task</h2>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-primary-light text-primary px-3 py-2 rounded-pill">Drafting</span>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="Title" class="form-label text-uppercase fw-bold text-muted small" style="letter-spacing: 0.05em;">Task Title</label>
+                            <input asp-for="Title" class="form-control form-control-lg border-0 bg-light px-3"
+                                   placeholder="e.g., Design System Update" style="border-radius: 10px; font-size: 1rem;"/>
+                            <span asp-validation-for="Title" class="text-danger small"></span>
+                        </div>
+                        <div class="mb-4">
+                            <label asp-for="Description"
+                                   class="form-label text-uppercase fw-bold text-muted small"
+                                   style="letter-spacing: 0.05em;">
+                                Description
+                            </label>
+
+                            <textarea asp-for="Description"
+              class="form-control border-0 bg-light px-3"
+              rows="4"
+              placeholder="Describe the task..."
+              style="border-radius: 10px;"></textarea>
+
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-sm-6">
+                                <label asp-for="StartDate" class="form-label text-uppercase fw-bold text-muted small" style="letter-spacing: 0.05em;">Start Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-0 bg-light"><i class="bi bi-calendar-event"></i></span>
+                                    <input asp-for="StartDate" type="date" class="form-control border-0 bg-light" style="border-radius: 0 10px 10px 0;"/>
+                                </div>
+                                <span asp-validation-for="StartDate" class="text-danger small"></span>
+                            </div>
+                            <div class="col-sm-6">
+                                <label asp-for="EndDate" class="form-label text-uppercase fw-bold text-muted small" style="letter-spacing: 0.05em;">Due Date</label>
+                                <div class="input-group">
+                                    <span class="input-group-text border-0 bg-light"><i class="bi bi-calendar-check"></i></span>
+                                    <input asp-for="EndDate" type="date" class="form-control border-0 bg-light" style="border-radius: 0 10px 10px 0;"/>
+                                </div>
+                                <span asp-validation-for="EndDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm fw-semibold"
+                                    style="background: var(--primary); border: none; border-radius: 12px; padding: 12px;">
+                                Create Task
+                            </button>
+                            <button type="button" class="btn btn-link text-muted text-decoration-none small"
+                                    onclick="window.history.back()">
+                                Cancel and discard
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <p class="text-center text-muted small mt-4">
+                <i class="bi bi-info-circle me-1"></i> New tasks are automatically assigned to the current workspace.
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
