@@ -39,6 +39,8 @@ public class TaskService : ITaskService
         _context = context;
         
     }
+    public async Task<List<TaskItem>> GetTasksByStateAsync(State state)
+        => await _Taskrepo.GetTasksByStateAsync(state);
 
     public async Task<List<TaskItem>> SearchTasksAsync(string q)
     {
@@ -81,5 +83,32 @@ public async Task ChangeTaskStateAsync(int taskId, State newState, string acting
             await _Taskrepo.UpdateAsync(taskItem);
         }
     }
-    
+    public async Task<List<TaskItem>> GetTasksForTodayAsync()
+    {
+        return await _Taskrepo.GetRecentTasksAsync(1);
+    }
+
+    public async Task<List<TaskItem>> GetTasksForThisWeekAsync()
+    {
+        return await _Taskrepo.GetRecentTasksAsync(7);
+    }
+
+    public async Task<List<TaskItem>> GetTasksByDateRangeAsync(DateTime from, DateTime to)
+    {
+        var all = await _Taskrepo.GetAllAsync();
+
+        return all
+            .Where(t =>
+                t.StartDate.Date >= from.Date &&
+                t.EndDate.Date <= to.Date)
+            .ToList();
+    }
+
+    public async Task<List<TaskItem>> GetTasksOrderedByDateAsync()
+    {
+        return await _Taskrepo.GetTasksOrderedByDateAsync();
+    }
+
+
 }
+    

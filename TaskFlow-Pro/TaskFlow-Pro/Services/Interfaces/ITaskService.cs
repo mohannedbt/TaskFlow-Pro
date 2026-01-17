@@ -30,7 +30,18 @@ namespace TaskFlow_Pro.Services.Interfaces
             string actingUserId
         );
         Task<List<TaskItem>> GetAllTasksAsync();
-        Task<List<TaskItem>> SearchTasksAsync(string q);
+
+        Task<List<TaskItem>> SearchTasksAsync(string keyword);
+
+        Task<List<TaskItem>> GetTasksForTodayAsync();
+
+        Task<List<TaskItem>> GetTasksForThisWeekAsync();
+
+        Task<List<TaskItem>> GetTasksByDateRangeAsync(DateTime from, DateTime to);
+
+        Task<List<TaskItem>> GetTasksOrderedByDateAsync();
+        Task<List<TaskItem>> GetTasksByStateAsync(State state);
+
 
     }
 }
