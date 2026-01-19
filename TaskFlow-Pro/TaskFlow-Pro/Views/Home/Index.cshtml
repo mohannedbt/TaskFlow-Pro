@@ -1,8 +1,204 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Welcome to TaskFlow Pro";
+    Layout = "_Layout_Empty"; // Use empty layout to control the full page design
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+
+<style>
+    :root {
+        --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #6610f2 100%);
+        --slate-900: #0f172a;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #fff;
+        overflow-x: hidden;
+    }
+
+    /* Glassmorphism Navbar */
+    .navbar {
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.8);
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+    /* Hero Section */
+    .hero-section {
+        padding: 160px 0 100px;
+        background: radial-gradient(circle at top right, rgba(13, 110, 253, 0.05), transparent),
+                    radial-gradient(circle at bottom left, rgba(102, 16, 242, 0.05), transparent);
+        position: relative;
+    }
+
+    .floating-blob {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: var(--primary-gradient);
+        filter: blur(80px);
+        opacity: 0.1;
+        z-index: -1;
+        animation: floating 6s infinite ease-in-out;
+    }
+
+    @@keyframes floating {
+        0%, 100% { transform: translate(0, 0); }
+        50% { transform: translate(20px, -20px); }
+    }
+
+    .btn-gradient {
+        background: var(--primary-gradient);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-gradient:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(13, 110, 253, 0.3);
+        color: white;
+    }
+
+    .feature-card {
+        border: none;
+        border-radius: 24px;
+        transition: all 0.3s ease;
+        background: #f8fafc;
+    }
+
+    .feature-card:hover {
+        background: white;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+        transform: translateY(-10px);
+    }
+
+    .section-title {
+        color: var(--slate-900);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+    }
+</style>
+
+<nav class="navbar navbar-expand-lg fixed-top py-3">
+    <div class="container">
+        <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+            <div class="bg-primary text-white rounded-3 me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                <i class="bi bi-layers-half"></i>
+            </div>
+            TaskFlow <span class="text-primary">Pro</span>
+        </a>
+        <div class="d-flex gap-2">
+            <a asp-controller="Account" asp-action="Login" class="btn btn-link text-dark text-decoration-none fw-semibold">Login</a>
+            <a asp-controller="Account" asp-action="Register" class="btn btn-gradient shadow-sm">Sign Up Now</a>
+        </div>
+    </div>
+</nav>
+
+<section class="hero-section">
+    <div class="floating-blob" style="top: 10%; right: 10%;"></div>
+    <div class="container text-center">
+        <h1 class="display-3 fw-bolder animate__animated animate__fadeInUp section-title mb-4">
+            Manage Teams & Tasks <br />
+            <span class="text-primary">Without the Chaos.</span>
+        </h1>
+        <p class="lead text-muted mx-auto mb-5 animate__animated animate__fadeInUp animate__delay-1s" style="max-width: 650px;">
+            The all-in-one workspace to assign tasks, track real-time progress, and scale your team’s productivity with high-performance tools.
+        </p>
+        <div class="d-flex justify-content-center gap-3 animate__animated animate__fadeInUp animate__delay-2s">
+            <a asp-controller="Account" asp-action="Register" class="btn btn-gradient btn-lg px-5 shadow">Get Started Free</a>
+            <button class="btn btn-outline-dark btn-lg px-5 rounded-3" onclick="scrollToFeatures()">See How It Works</button>
+        </div>
+    </div>
+</section>
+
+<section id="features" class="py-5">
+    <div class="container py-5">
+        <div class="row g-5 align-items-center mb-5">
+            <div class="col-lg-6" data-aos="fade-right">
+                <span class="badge bg-primary-soft text-primary px-3 py-2 rounded-pill mb-3">Team Management</span>
+                <h2 class="section-title display-5 mb-4">Assign tasks in seconds, not hours.</h2>
+                <p class="text-muted fs-5">
+                    TaskFlow allows managers to see team availability at a glance. Drag, drop, and deploy tasks to the right person instantly.
+                </p>
+                <ul class="list-unstyled mt-4">
+                    <li class="mb-3 d-flex align-items-center"><i class="bi bi-check-circle-fill text-primary me-2"></i> Real-time workload tracking</li>
+                    <li class="mb-3 d-flex align-items-center"><i class="bi bi-check-circle-fill text-primary me-2"></i> Automatic status updates</li>
+                    <li class="mb-3 d-flex align-items-center"><i class="bi bi-check-circle-fill text-primary me-2"></i> Role-based permissions</li>
+                </ul>
+            </div>
+            <div class="col-lg-6" data-aos="zoom-in">
+                <div class="p-4 bg-light rounded-4 shadow-sm">
+                    <img src="https://img.freepik.com/free-vector/project-management-concept-illustration_114360-1478.jpg" class="img-fluid rounded-3 shadow" alt="Dashboard View">
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mt-5">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card feature-card p-4 h-100">
+                    <div class="bg-white shadow-sm rounded-4 d-inline-flex align-items-center justify-content-center mb-4" style="width: 60px; height: 60px;">
+                        <i class="bi bi-lightning-charge fs-3 text-primary"></i>
+                    </div>
+                    <h4 class="fw-bold">Lightning Fast</h4>
+                    <p class="text-muted small">Optimized for speed. No more waiting for boards to load during stand-ups.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card feature-card p-4 h-100">
+                    <div class="bg-white shadow-sm rounded-4 d-inline-flex align-items-center justify-content-center mb-4" style="width: 60px; height: 60px;">
+                        <i class="bi bi-people fs-3 text-primary"></i>
+                    </div>
+                    <h4 class="fw-bold">Smart Assign</h4>
+                    <p class="text-muted small">AI-powered suggestions to help you balance the load across your entire team.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="card feature-card p-4 h-100">
+                    <div class="bg-white shadow-sm rounded-4 d-inline-flex align-items-center justify-content-center mb-4" style="width: 60px; height: 60px;">
+                        <i class="bi bi-graph-up-arrow fs-3 text-primary"></i>
+                    </div>
+                    <h4 class="fw-bold">Live Progress</h4>
+                    <p class="text-muted small">Watch tasks move from "Not Assigned" to "Completed" in beautiful real-time charts.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="bg-dark py-5 text-white">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4" data-aos="fade-up">Ready to flow?</h2>
+        <a asp-controller="Account" asp-action="Register" class="btn btn-primary btn-lg rounded-pill px-5" data-aos="zoom-in">Join TaskFlow Pro Today</a>
+        <p class="mt-5 text-muted small">&copy; @DateTime.Now.Year TaskFlow Pro. Built for modern teams.</p>
+    </div>
+</footer>
+
+<script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+<script>
+    // Initialize Scroll Animations
+    AOS.init({
+        duration: 1000,
+        once: true,
+        easing: 'ease-in-out'
+    });
+
+    function scrollToFeatures() {
+        document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Navbar effect on scroll
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 50) {
+            document.querySelector('.navbar').classList.add('shadow-sm');
+        } else {
+            document.querySelector('.navbar').classList.remove('shadow-sm');
+        }
+    });
+</script>

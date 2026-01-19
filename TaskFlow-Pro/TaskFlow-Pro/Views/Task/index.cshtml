@@ -1,276 +1,248 @@
-﻿@model IEnumerable<TaskFlow_Pro.Models.TaskItem>
+﻿@model TaskFlow_Pro.Models.TaskViewModel
 @using TaskFlow_Pro.Models
+
 @{
-    ViewData["Title"] = "Task Board";
+ViewData["Title"] = "Task Board";
+
+int currentPage = ViewBag.CurrentPage ?? 1;
+int totalPages  = ViewBag.TotalPages ?? 1;
+string? q       = ViewBag.SearchQuery;
+State? state    = ViewBag.State;
 }
 
-<!-- TOP BAR -->
+<!-- ================= HEADER ================= -->
 <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-0">TaskFlow Pro</h3>
+        <p class="text-muted small mb-0">Project Management Dashboard</p>
+    </div>
 
-    <!-- SEARCH + STATE FILTER -->
-    <form asp-action="Index" method="get" class="d-flex gap-2 align-items-center">
+    <div class="dropdown">
+        <button class="btn bg-white border rounded-pill px-3 py-2 d-flex align-items-center gap-2"
+                data-bs-toggle="dropdown">
+            <span class="fw-semibold small">@User.Identity?.Name</span>
+            <img src="https://ui-avatars.com/api/?name=@User.Identity?.Name&background=0D6EFD&color=fff"
+                 class="rounded-circle" width="36" />
+        </button>
 
-        <input type="text"
-               name="q"
-               value="@ViewBag.SearchQuery"
-               class="form-control form-control-sm"
-               placeholder="Search tasks..."
-               style="max-width: 220px;" />
+        <ul class="dropdown-menu dropdown-menu-end shadow rounded-4">
+            <li>
+                <a class="dropdown-item" asp-controller="Profile" asp-action="Index">
+                    <i class="bi bi-person me-2"></i>Profile
+                </a>
+            </li>
+            <li><hr class="dropdown-divider" /></li>
+            <li>
+                <form asp-controller="Account" asp-action="Logout" method="post">
+                    <button class="dropdown-item text-danger">
+                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</div>
 
-        <!-- STATE FILTER -->
-        <select name="state"
-                class="form-select form-select-sm"
-                style="max-width: 160px;"
-                onchange="this.form.submit()">
-            <option value="">All States</option>
+<!-- ================= FILTER BAR ================= -->
+<form asp-action="Index" method="get" class="row g-2 align-items-end mb-4">
+
+    <div class="col-md-4">
+        <label class="form-label small fw-semibold">Search</label>
+        <input type="text" name="q" value="@q" class="form-control"
+               placeholder="Search tasks..." />
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label small fw-semibold">State</label>
+        <select name="state" class="form-select">
+            <option value="">All</option>
             @foreach (State s in Enum.GetValues(typeof(State)))
             {
-                <option value="@s" selected="@(ViewBag.State == s)">
-                    @s
-                </option>
+            <option value="@s" selected="@(state == s)">@s</option>
             }
         </select>
+    </div>
 
-        <button class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-search"></i>
+    <div class="col-md-3">
+        <label class="form-label small fw-semibold">Date</label>
+        <select name="range" class="form-select">
+            <option value="">All</option>
+            <option value="today">Today</option>
+            <option value="week">This week</option>
+        </select>
+    </div>
+
+    <div class="col-md-2 d-flex gap-2">
+        <button class="btn btn-primary w-100">
+            <i class="bi bi-filter"></i>
         </button>
-
-    </form>
-
-    <div class="d-flex gap-2">
-        <!-- DATE FILTER MENU BUTTON -->
-        <button class="btn btn-outline-secondary btn-sm"
-                data-bs-toggle="modal"
-                data-bs-target="#dateFilterModal">
-            <i class="bi bi-calendar-range me-1"></i>
-            Filter
-        </button>
-
-        <!-- ADD TASK -->
-        <a asp-action="Create"
-           class="btn btn-primary btn-sm fw-semibold px-3">
-            <i class="bi bi-plus-lg me-1"></i>
-            New Task
+        <a asp-action="Create" class="btn btn-success w-100">
+            <i class="bi bi-plus-lg"></i>
         </a>
     </div>
+</form>
 
-</div>
-
-<!-- TABLE HEADER -->
-<div class="row px-4 mb-2 text-muted text-uppercase fw-bold"
-     style="font-size: 0.7rem; letter-spacing: 0.08em;">
-    <div class="col-lg-4">Task</div>
-    <div class="col-lg-2 text-center">State</div>
-    <div class="col-lg-3 text-center">Timeline</div>
-    <div class="col-lg-3 text-end">Actions</div>
-</div>
-
-<!-- TASK LIST -->
+<!-- ================= TASK LIST ================= -->
 <div class="d-flex flex-column gap-3">
 
-@foreach (var task in Model)
-{
-    <div class="bg-white shadow-sm border rounded-4 px-4 py-3">
-        <div class="row align-items-center">
+    @foreach (var task in Model.taskItem)
+    {
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body">
+            <div class="row align-items-center">
 
-            <!-- TASK INFO -->
-            <div class="col-lg-4">
-                <div class="fw-bold">@task.Title</div>
-                <div class="text-muted small">#TF-@task.Id.ToString("D4")</div>
-            </div>
+                <div class="col-md-4">
+                    <div class="fw-bold">@task.Title</div>
+                    <div class="text-muted small">#TF-@task.Id.ToString("D4")</div>
+                </div>
 
-            <!-- STATE -->
-            <div class="col-lg-2 text-center">
-                @{
+                <div class="col-md-2 text-center">
+                    @{
                     var badge = task.State switch
                     {
-                        State.Completed   => "bg-success",
-                        State.Canceled    => "bg-danger",
-                        State.Interrupted => "bg-warning text-dark",
-                        State.Ongoing     => "bg-primary",
-                        _                 => "bg-secondary"
+                    State.Completed   => "bg-success",
+                    State.Canceled    => "bg-danger",
+                    State.Interrupted => "bg-warning text-dark",
+                    State.Ongoing     => "bg-primary",
+                    _                 => "bg-secondary"
                     };
-                }
-                <span class="badge @badge px-4 py-2 fw-bold rounded-pill">
-                    @task.State
-                </span>
-            </div>
+                    }
+                    <span class="badge @badge px-3 py-2 rounded-pill">
+                        @task.State
+                    </span>
+                </div>
 
-            <!-- DATES -->
-            <div class="col-lg-3 text-center text-muted small">
-                <i class="bi bi-calendar3 me-1"></i>
-                @task.StartDate.ToString("MMM dd") —
-                @task.EndDate.ToString("MMM dd")
-            </div>
+                <div class="col-md-3 text-center text-muted small">
+                    @task.StartDate.ToShortDateString()
+                    —
+                    @task.EndDate.ToShortDateString()
+                </div>
 
-            <!-- ACTIONS -->
-            <div class="col-lg-3 text-end">
+                <div class="col-md-3 text-end d-flex gap-2 justify-content-end">
 
-@if (task.State == State.Completed || task.State == State.Canceled)
-{
-    <span class="text-muted fst-italic small">
-        <i class="bi bi-lock-fill me-1"></i> Final
-    </span>
-}
-else
-{
-    <div class="d-inline-flex gap-2 align-items-center">
+                    @if (task.State == State.NotAssigned)
+                    {
+                    <button class="btn btn-outline-primary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#assignModal-@task.Id">
+                        Start
+                    </button>
+                    }
+                    else if (task.State == State.Ongoing)
+                    {
+                    <form asp-action="ChangeState" method="post">
+                        <input type="hidden" name="id" value="@task.Id" />
+                        <input type="hidden" name="newState" value="Interrupted" />
+                        <button class="btn btn-outline-warning btn-sm">
+                            <i class="bi bi-pause-fill"></i>
+                        </button>
+                    </form>
 
-        @* PAUSE *@
-        @if (task.State == State.Ongoing)
-        {
-            <form asp-action="ChangeState" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="id" value="@task.Id" />
-                <input type="hidden" name="newState" value="Interrupted" />
-                <button class="btn btn-sm btn-outline-warning" title="Pause">
-                    <i class="bi bi-pause-circle"></i>
-                </button>
-            </form>
-        }
+                    <form asp-action="ChangeState" method="post">
+                        <input type="hidden" name="id" value="@task.Id" />
+                        <input type="hidden" name="newState" value="Completed" />
+                        <button class="btn btn-success btn-sm">
+                            Complete
+                        </button>
+                    </form>
+                    }
+                    else if (task.State == State.Interrupted)
+                    {
+                    <form asp-action="ChangeState" method="post">
+                        <input type="hidden" name="id" value="@task.Id" />
+                        <input type="hidden" name="newState" value="Ongoing" />
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-play-fill"></i>
+                        </button>
+                    </form>
 
-        @* RESUME *@
-        @if (task.State == State.Interrupted)
-        {
-            <form asp-action="ChangeState" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="id" value="@task.Id" />
-                <input type="hidden" name="newState" value="Ongoing" />
-                <button class="btn btn-sm btn-outline-primary" title="Resume">
-                    <i class="bi bi-play-circle"></i>
-                </button>
-            </form>
-        }
-        @if (task.State == State.NotAssigned)
-        {
-            <form asp-action="ChangeState" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="id" value="@task.Id" />
-                <input type="hidden" name="newState" value="Ongoing" />
-                <button class="btn btn-sm btn-outline-primary" title="Start Task">
-                    <i class="bi bi-play-circle"></i>
-                </button>
-            </form>
-        }
+                    <form asp-action="ChangeState" method="post">
+                        <input type="hidden" name="id" value="@task.Id" />
+                        <input type="hidden" name="newState" value="Canceled" />
+                        <button class="btn btn-outline-danger btn-sm">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </form>
+                    }
 
-
-        @* COMPLETE *@
-        @if (task.State == State.Ongoing)
-        {
-            <form asp-action="ChangeState" method="post">
-                @Html.AntiForgeryToken()
-                <input type="hidden" name="id" value="@task.Id" />
-                <input type="hidden" name="newState" value="Completed" />
-                <button class="btn btn-sm btn-success" title="Complete">
-                    <i class="bi bi-check-circle"></i>
-                </button>
-            </form>
-        }
-
-        @* CANCEL *@
-        @if (task.State == State.Interrupted)
-        {
-            <button class="btn btn-sm btn-danger"
-                    title="Cancel"
-                    data-bs-toggle="modal"
-                    data-bs-target="#cancelModal-@task.Id">
-                <i class="bi bi-x-circle"></i>
-            </button>
-        }
-
-        @* INFO *@
-        <button class="btn btn-sm btn-outline-secondary"
-                data-bs-toggle="modal"
-                data-bs-target="#infoModal-@task.Id">
-            <i class="bi bi-info-circle"></i>
-        </button>
-
-    </div>
-}
-
+                    <button class="btn btn-outline-secondary btn-sm"
+                            data-bs-toggle="modal"
+                            data-bs-target="#infoModal-@task.Id">
+                        <i class="bi bi-info-circle"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- INFO MODAL -->
     <div class="modal fade" id="infoModal-@task.Id" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4">
                 <div class="modal-header">
                     <h5 class="fw-bold">@task.Title</h5>
                     <button class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted">@task.Description</p>
+                    <p>@task.Description</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- CANCEL MODAL -->
-    <div class="modal fade" id="cancelModal-@task.Id" tabindex="-1">
+    <!-- ASSIGN MODAL -->
+    <div class="modal fade" id="assignModal-@task.Id" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content rounded-4">
-                <div class="modal-header border-0">
-                    <h5 class="fw-bold text-danger">Cancel Task</h5>
-                </div>
-                <div class="modal-body text-center">
-                    <p class="fw-semibold">
-                        Are you sure you want to cancel
-                        <strong>@task.Title</strong>?
-                    </p>
-                    <p class="text-muted small">This action is permanent.</p>
-                </div>
-                <div class="modal-footer border-0 justify-content-center gap-2">
-                    <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                        Keep
-                    </button>
-                    <form asp-action="ChangeState" method="post">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@task.Id" />
-                        <input type="hidden" name="newState" value="Canceled" />
-                        <button class="btn btn-danger">Cancel Task</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-</div>
+                <form asp-action="AssignAndStart" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="taskId" value="@task.Id" />
 
-<!-- DATE FILTER MODAL -->
-<div class="modal fade" id="dateFilterModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4">
-            <div class="modal-header">
-                <h5 class="fw-bold">Filter by Date</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-
-            <div class="modal-body">
-                <div class="d-grid gap-2 mb-3">
-                    <a asp-action="Index" asp-route-range="today" class="btn btn-outline-primary">
-                        Today
-                    </a>
-                    <a asp-action="Index" asp-route-range="week" class="btn btn-outline-primary">
-                        This Week
-                    </a>
-                </div>
-
-                <hr />
-
-                <form asp-action="Index" method="get">
-                    <div class="mb-2">
-                        <label class="form-label small">From</label>
-                        <input type="date" name="from" class="form-control" />
+                    <div class="modal-header">
+                        <h5 class="fw-bold">Assign Task</h5>
+                        <button class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label small">To</label>
-                        <input type="date" name="to" class="form-control" />
+
+                    <div class="modal-body">
+                        <select name="assignedToId" class="form-select" required>
+                            <option value="">Select user</option>
+                            @foreach (var user in Model.users ?? Enumerable.Empty<ApplicationUser>())
+                            {
+                            <option value="@user.Id">@user.UserName</option>
+                            }
+                        </select>
                     </div>
-                    <button class="btn btn-primary w-100">Apply</button>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button class="btn btn-primary fw-bold">Assign & Start</button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
+    }
 </div>
+
+<!-- ================= PAGINATION ================= -->
+@if (totalPages > 1)
+{
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+
+        @for (int i = 1; i <= totalPages; i++)
+        {
+        <li class="page-item @(i == currentPage ? "active" : "")">
+            <a class="page-link"
+               asp-action="Index"
+               asp-route-page="@i"
+               asp-route-q="@q"
+               asp-route-state="@state">
+                @i
+            </a>
+        </li>
+        }
+
+    </ul>
+</nav>
+}

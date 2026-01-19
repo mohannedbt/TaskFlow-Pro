@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskFlow_Pro.Models;
 
@@ -11,9 +12,11 @@ using TaskFlow_Pro.Models;
 namespace TaskFlow_Pro.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260119101851_migration5")]
+    partial class migration5
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -268,7 +271,6 @@ namespace TaskFlow_Pro.Migrations
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("CreatedById")
-                        .IsRequired()
                         .HasColumnType("varchar(255)");
 
                     b.Property<string>("Description")
@@ -415,9 +417,7 @@ namespace TaskFlow_Pro.Migrations
 
                     b.HasOne("TaskFlow_Pro.Models.ApplicationUser", "CreatedBy")
                         .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CreatedById");
 
                     b.Navigation("AssignedTo");
 

@@ -30,6 +30,13 @@ public class TaskRepository: ITaskRepository
         return list;
     }
 
+    public async Task<List<TaskItem>> GetAllByCreator(string id)
+    {
+        var list= await _context.Tasks.ToListAsync();
+        var query= from t in list where t.CreatedById == id select t;
+        return query.ToList();
+    }
+
     public async Task<TaskItem?> GetByIdAsync(int taskId)
     {
         var data =await _context.Tasks.ToListAsync();

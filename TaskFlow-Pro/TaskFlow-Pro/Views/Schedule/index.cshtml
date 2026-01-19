@@ -1,0 +1,124 @@
+﻿@{
+    ViewData["Title"] = "Schedule";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet" />
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Schedule</h3>
+        <p class="text-muted small mb-0">
+            Visualize your tasks by date — no hours, no clutter
+        </p>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a asp-controller="Task" asp-action="Create"
+           class="btn btn-primary rounded-3 fw-semibold">
+            <i class="bi bi-plus-lg me-1"></i> New Task
+        </a>
+
+        <button id="toggleCompact"
+                class="btn btn-outline-secondary rounded-3">
+            <i class="bi bi-layout-text-window"></i>
+        </button>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm rounded-4">
+    <div class="card-body p-4">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const calendarEl = document.getElementById('calendar');
+    let compactMode = false;
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 'auto',
+
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,dayGridWeek'
+        },
+
+        events: '/Schedule/GetEvents',
+
+        // 🔒 DATE-ONLY MODE
+        allDaySlot: true,
+        displayEventTime: false,
+
+        eventClick: function (info) {
+            window.location.href = '/Task/Details/' + info.event.id;
+        },
+
+        eventDidMount: function (info) {
+            info.el.classList.add('fc-task-event');
+        }
+    });
+
+    calendar.render();
+
+    // 🔧 Compact mode toggle
+    document.getElementById('toggleCompact').addEventListener('click', () => {
+        compactMode = !compactMode;
+        calendarEl.classList.toggle('compact', compactMode);
+    });
+});
+</script>
+
+<style>
+/* ===== CALENDAR BASE ===== */
+#calendar {
+    min-height: 600px;
+    font-family: 'Inter', system-ui, sans-serif;
+}
+
+.fc-toolbar-title {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+/* ===== DAY CELLS ===== */
+.fc-daygrid-day {
+    border-radius: 12px;
+    transition: background 0.2s;
+}
+
+.fc-daygrid-day:hover {
+    background: rgba(13,110,253,.04);
+}
+
+/* ===== EVENTS ===== */
+.fc-task-event {
+    border-radius: 10px !important;
+    padding: 4px 8px;
+    font-size: .78rem;
+    font-weight: 500;
+    border: none !important;
+}
+
+/* ===== STATE COLORS ===== */
+.fc-event[style*="#198754"] { background: rgba(25,135,84,.15) !important; color: #198754; }
+.fc-event[style*="#0d6efd"] { background: rgba(13,110,253,.15) !important; color: #0d6efd; }
+.fc-event[style*="#ffc107"] { background: rgba(255,193,7,.18) !important; color: #856404; }
+.fc-event[style*="#dc3545"] { background: rgba(220,53,69,.15) !important; color: #dc3545; }
+
+/* ===== COMPACT MODE ===== */
+#calendar.compact .fc-daygrid-event {
+    margin: 2px 0 !important;
+    font-size: .7rem;
+    padding: 2px 6px;
+}
+
+#calendar.compact .fc-toolbar-title {
+    font-size: 1rem;
+}
+</style>

@@ -27,6 +27,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultTokenProviders();
 builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskRepository,TaskRepository>();
+builder.Services.AddScoped<ITeamRepository,TeamRepository>();
+builder.Services.AddScoped<ITeamService, TeamService>();
 
 
 // ===== MVC + Razor Pages =====

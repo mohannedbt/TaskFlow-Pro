@@ -1,18 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using TaskFlow_Pro.Models;
 using TaskFlow_Pro.Services.Interfaces;
-
+using Microsoft.AspNetCore.Identity;
 namespace TaskFlow_Pro.Controllers
 {
+    [Authorize]
     public class TaskController : Controller
     {
         private readonly ITaskService _taskService;
         private const int PageSize = 5;
+        private readonly UserManager<ApplicationUser> _userManager;
 
 
-        public TaskController(ITaskService taskService)
+        public TaskController(ITaskService taskService, UserManager<ApplicationUser> userManager)
         {
             _taskService = taskService;
+            _userManager = userManager;
         }
 
         // ====================================
@@ -46,7 +50,7 @@ namespace TaskFlow_Pro.Controllers
             else if (orderByDate)
                 tasks = await _taskService.GetTasksOrderedByDateAsync();
             else
-                tasks = await _taskService.GetAllTasksAsync();
+                tasks = await _taskService.GetAllTasksByIDAsync(_userManager.GetUserId(User));
 
             // Search always applied last
             if (!string.IsNullOrWhiteSpace(q))
@@ -61,13 +65,42 @@ namespace TaskFlow_Pro.Controllers
                 .Skip((page - 1) * PageSize)
                 .Take(PageSize)
                 .ToList();
+            TaskViewModel viewModel = new TaskViewModel();
+            viewModel.taskItem=pagedTasks;
+            viewModel.users =_userManager.Users.ToList();
 
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = (int)Math.Ceiling(totalItems / (double)PageSize);
             ViewBag.SearchQuery = q;
             ViewBag.State = state;
 
-            return View(pagedTasks);
+            return View(viewModel);
+        }
+// ====================================
+// ASSIGN + START TASK
+// ====================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignAndStart(int taskId, string assignedToId)
+        {
+            // 🔎 Load task
+            var task = await _taskService.GetTaskByIdAsync(taskId);
+            if (task == null)
+                return NotFound();
+
+            // 🔎 Load user
+            var user = await _userManager.FindByIdAsync(assignedToId);
+            if (user == null)
+                return NotFound();
+
+            // ✅ Assign user
+            task.AssignedTo = user;
+            task.State = State.Ongoing;
+
+            // ✅ Persist changes
+             await _taskService.UpdateTaskAsync(task);
+
+            return RedirectToAction(nameof(Index));
         }
 
         // ====================================
@@ -89,10 +122,10 @@ namespace TaskFlow_Pro.Controllers
             await _taskService.CreateTaskAsync(
                 model.Title,
                 model.Description,
-                "anonymous",
+                _userManager.GetUserId(User),
                 model.StartDate,
                 model.EndDate
-            );
+            ).ConfigureAwait(false);
 
             return RedirectToAction(nameof(Index));
         }

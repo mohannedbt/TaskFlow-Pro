@@ -1,4 +1,6 @@
-﻿namespace TaskFlow_Pro.Models;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+
+namespace TaskFlow_Pro.Models;
 
 public class TaskItem
 {
@@ -9,7 +11,7 @@ public class TaskItem
     public string Title {get; set;}
     public string Description {get; set;}
     
-    public string CreatorById {get; set;}
+    public string CreatedById {get; set;}
     public ApplicationUser CreatedBy {get; set;}
     public ApplicationUser AssignedTo {get; set;}
     public State State {get; set;}

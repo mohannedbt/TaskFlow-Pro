@@ -1,0 +1,132 @@
+﻿@model TaskFlow_Pro.Models.ProfileViewModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "My Profile";
+    
+    var teamSelectList = new SelectList(
+        Model.AvailableTeams,
+        "Id",
+        "Name",
+        Model.TeamId
+    );
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-11 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+
+            <div class="text-center mb-4">
+                <div class="position-relative d-inline-block">
+                    <img src="https://ui-avatars.com/api/?name=@Model.Username&background=0D6EFD&color=fff&size=128"
+                         class="rounded-circle shadow-sm border border-4 border-white"
+                         width="100" height="100" />
+                    <span class="position-absolute bottom-0 end-0 bg-success border border-2 border-white rounded-circle" 
+                          style="width: 20px; height: 20px;" title="Online"></span>
+                </div>
+                <h3 class="fw-bold mt-3" style="color: #0f172a;">@Model.Username</h3>
+                <p class="text-muted small">Member since @DateTime.Now.ToString("MMMM yyyy")</p>
+            </div>
+
+            <div class="card border-0 shadow-lg p-2" style="border-radius: 24px;">
+                <div class="card-body p-4 p-md-5">
+                    
+                    <div class="mb-4">
+                        <h5 class="fw-bold m-0" style="color: #0f172a;">Account Settings</h5>
+                        <p class="text-muted small">Update your personal workspace details</p>
+                    </div>
+
+                    <form asp-action="Index" method="post" id="profileForm">
+                        @Html.AntiForgeryToken()
+
+                        @if (!ViewData.ModelState.IsValid)
+                        {
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 small rounded-3 mb-4"></div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-uppercase" style="color: #475569; font-size: 0.65rem; letter-spacing: 0.08em;">Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0" style="border-radius: 10px 0 0 10px;">
+                                    <i class="bi bi-person text-muted"></i>
+                                </span>
+                                <input asp-for="Username" class="form-control border-0 bg-light py-2" placeholder="Your username" style="border-radius: 0 10px 10px 0;" />
+                            </div>
+                            <span asp-validation-for="Username" class="text-danger x-small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-uppercase" style="color: #475569; font-size: 0.65rem; letter-spacing: 0.08em;">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0" style="border-radius: 10px 0 0 10px;">
+                                    <i class="bi bi-envelope text-muted"></i>
+                                </span>
+                                <input asp-for="Email" class="form-control border-0 bg-light py-2" placeholder="you@email.com" style="border-radius: 0 10px 10px 0;" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger x-small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-uppercase" style="color: #475569; font-size: 0.65rem; letter-spacing: 0.08em;">Team Assignment</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-0" style="border-radius: 10px 0 0 10px;">
+                                    <i class="bi bi-people text-muted"></i>
+                                </span>
+                                <select asp-for="TeamId" class="form-select border-0 bg-light py-2" asp-items="teamSelectList" style="border-radius: 0 10px 10px 0;">
+                                    <option value="">— No Team —</option>
+                                </select>
+                            </div>
+                            @if (Model.TeamName != null)
+                            {
+                                <div class="x-small text-success mt-2 fw-medium">
+                                    <i class="bi bi-shield-check me-1"></i> Verified member of <strong>@Model.TeamName</strong>
+                                </div>
+                            }
+                        </div>
+
+                        <button type="submit" id="saveBtn" class="btn btn-primary w-100 py-3 fw-bold shadow-sm" 
+                                style="background: #0d6efd; border: none; border-radius: 12px; transition: transform 0.2s;">
+                            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                            Save Profile Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a asp-action="Index" asp-controller="Task" class="small text-muted text-decoration-none fw-semibold">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Task Board
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .x-small { font-size: 0.75rem; display: block; margin-top: 4px; }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.1);
+    }
+
+    .form-control:focus, .form-select:focus {
+        background-color: #f1f5f9 !important;
+        box-shadow: none;
+        outline: none;
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.getElementById('profileForm').addEventListener('submit', function() {
+            if ($(this).valid()) {
+                const btn = document.getElementById('saveBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Updating...';
+            }
+        });
+    </script>
+}

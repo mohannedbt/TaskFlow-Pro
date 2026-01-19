@@ -1,0 +1,119 @@
+﻿@model RegisterViewModel
+@{
+    ViewData["Title"] = "Create Account";
+    Layout = "_Layout_Empty";
+}
+
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light p-3">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-5 col-xl-4">
+        
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-3 mb-2 shadow-sm" style="width: 48px; height: 48px;">
+                <i class="bi bi-layers-half fs-3"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-0">TaskFlow Pro</h3>
+            <p class="text-muted small">Collaborative Task Management</p>
+        </div>
+
+        <div class="card border shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+                
+                <h5 class="fw-bold mb-1 text-dark">Get Started</h5>
+                <p class="text-muted small mb-4">Create your workspace identity</p>
+
+                <form asp-action="Register" method="post" id="registerForm">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 small rounded-3 mb-4"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Username" class="form-label small fw-bold text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.08em;"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+                            <input asp-for="Username" class="form-control bg-light border-start-0 ps-0" placeholder="johndoe_tf" />
+                        </div>
+                        <span asp-validation-for="Username" class="text-danger x-small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Email" class="form-label small fw-bold text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.08em;"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-envelope text-muted"></i></span>
+                            <input asp-for="Email" class="form-control bg-light border-start-0 ps-0" placeholder="name@company.com" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger x-small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label small fw-bold text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.08em;"></label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-shield-lock text-muted"></i></span>
+                            <input asp-for="Password" type="password" class="form-control bg-light border-start-0 ps-0" placeholder="••••••••" />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger x-small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="ConfirmPassword" class="form-label small fw-bold text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.08em;">Verify Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-check2-circle text-muted"></i></span>
+                            <input asp-for="ConfirmPassword" type="password" class="form-control bg-light border-start-0 ps-0" placeholder="••••••••" />
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger x-small mt-1 d-block"></span>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn btn-primary w-100 py-2 fw-bold rounded-3 shadow-sm transition-hover mt-2">
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        Create Account
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="small text-muted mb-0">
+                        Already have an account?
+                        <a asp-action="Login" class="fw-bold text-primary text-decoration-none border-bottom border-primary border-2 pb-1 ms-1">
+                            Sign in
+                        </a>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <p class="text-muted" style="font-size: 0.7rem; opacity: 0.8;">
+                &copy; @DateTime.Now.Year TaskFlow Pro Dashboard System
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .x-small { font-size: 0.72rem; font-weight: 500; }
+    .transition-hover:hover { 
+        transform: translateY(-2px); 
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15) !important;
+        transition: all 0.25s ease;
+    }
+    .input-group-text { border-color: #e9ecef; }
+    .form-control { border-color: #e9ecef; }
+    .form-control:focus { 
+        background-color: #fff !important;
+        border-color: #86b7fe;
+        box-shadow: none;
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Form Loading Animation
+        document.getElementById('registerForm').addEventListener('submit', function() {
+            if ($(this).valid()) {
+                const btn = document.getElementById('submitBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+            }
+        });
+    </script>
+}

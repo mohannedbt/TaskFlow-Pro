@@ -9,7 +9,7 @@ namespace TaskFlow_Pro.Services.Interfaces
         // Creation
         // ========================
 
-        Task<TaskItem> CreateTaskAsync(string title, string description, string creatorUserId, DateTime startDate,
+        Task<TaskItem> CreateTaskAsync(string title, string description, string? creatorUserId, DateTime startDate,
             DateTime endDate);
         // ========================
         // Assignment
@@ -41,6 +41,10 @@ namespace TaskFlow_Pro.Services.Interfaces
 
         Task<List<TaskItem>> GetTasksOrderedByDateAsync();
         Task<List<TaskItem>> GetTasksByStateAsync(State state);
+        Task UpdateTaskAsync(TaskItem task);
+        Task<TaskItem> GetTaskByIdAsync(int taskId);
+        Task<List<TaskItem>> GetAllTasksByIDAsync(string id);
+
 
 
     }

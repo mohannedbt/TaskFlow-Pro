@@ -71,5 +71,8 @@ namespace TaskFlow_Pro.Repositories.Interfaces
         /// Update an existing task.
         /// </summary>
         Task UpdateAsync(TaskItem task);
+
+        public Task<List<TaskItem>> GetAllByCreator(string id);
+
     }
 }

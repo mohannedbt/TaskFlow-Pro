@@ -1,4 +1,5 @@
-﻿using TaskFlow_Pro.Models;
+﻿using Microsoft.AspNetCore.Identity;
+using TaskFlow_Pro.Models;
 using TaskFlow_Pro.Repositories.Interfaces;
 using TaskFlow_Pro.Services.Interfaces;
 
@@ -8,6 +9,7 @@ public class TaskService : ITaskService
 {
     public ITaskRepository _Taskrepo;
     public ApplicationDbContext _context;
+    public UserManager<ApplicationUser> _userManager;
     
     private static readonly Dictionary<State, HashSet<State>> AllowedTransitions =
         new()
@@ -33,10 +35,11 @@ public class TaskService : ITaskService
         };
 
 
-    public TaskService(ITaskRepository repo, ApplicationDbContext context)
+    public TaskService(ITaskRepository repo, ApplicationDbContext context,UserManager<ApplicationUser> userManager)
     {
         _Taskrepo = repo;
         _context = context;
+        _userManager=userManager;
         
     }
     public async Task<List<TaskItem>> GetTasksByStateAsync(State state)
@@ -47,23 +50,39 @@ public class TaskService : ITaskService
         return await _Taskrepo.SearchTasksAsync(q);
     }
 
-    public async Task<TaskItem> CreateTaskAsync(string title, string description, string creatorUserId,DateTime startDate, DateTime endDate)
+    public async Task<TaskItem> CreateTaskAsync(
+        string title,
+        string description,
+        string creatorUserId,
+        DateTime startDate,
+        DateTime endDate)
     {
+        var item = new TaskItem
+        {
+            Title = title,
+            Description = description,
+            StartDate = startDate,
+            EndDate = endDate,
 
-    TaskItem item=new TaskItem();
-    item.Title=title;
-    item.StartDate=startDate;
-    item.EndDate=endDate;
-    item.Description=description;
-    item.CreatorById=creatorUserId;
-    item.State=State.NotAssigned;
-    await _Taskrepo.AddAsync(item);
-    return item;
+            // ✅ ONLY SET THE FK
+            CreatedById = creatorUserId,
+
+            State = State.NotAssigned
+        };
+
+        await _Taskrepo.AddAsync(item);
+        return item;
     }
+
 
     public async  Task<List<TaskItem>> GetAllTasksAsync()
     {
         return await _Taskrepo.GetAllAsync();
+    }
+
+    public async Task<List<TaskItem>> GetAllTasksByIDAsync(string id)
+    {
+        return await _Taskrepo.GetAllByCreator(id);
     }
 
 
@@ -109,6 +128,15 @@ public async Task ChangeTaskStateAsync(int taskId, State newState, string acting
         return await _Taskrepo.GetTasksOrderedByDateAsync();
     }
 
+    public async Task UpdateTaskAsync(TaskItem task)
+    {
+         await _Taskrepo.UpdateAsync(task);
+        
+    }
 
+    public async Task<TaskItem> GetTaskByIdAsync(int taskId)
+    {
+        return await _Taskrepo.GetByIdAsync(taskId);
+    }
 }
     
