@@ -89,6 +89,24 @@ namespace TaskFlow_Pro.Services.Implementations
 
             await _teamRepo.UpdateAsync(team);
         }
+        //======================
+        // Get Team Member
+        //=====================
+        public async Task<List<ApplicationUser>> GetTeamMembersAsync(int teamid)
+        {
+            var team = await _teamRepo.GetByIdAsync(teamid);
+            if (team != null)
+            {
+                List<ApplicationUser> members=team.Members.ToList();
+                return members;
+            }
+            else
+            {
+                return null;
+            }
+
+           
+        }
 
         // =========================
         // REMOVE MEMBER (LEADER ONLY)
@@ -126,6 +144,14 @@ namespace TaskFlow_Pro.Services.Implementations
 
             team.LeaderId = newLeaderId;
             await _teamRepo.UpdateAsync(team);
+        }
+        // ========================
+        // IS team Leader
+        // =========================
+        public async Task<bool> IsTeamLeaderAsync(int? teamId, string userId)
+        {
+            var team = await _teamRepo.GetByIdAsync(teamId);
+            return team.LeaderId == userId;
         }
     }
 }

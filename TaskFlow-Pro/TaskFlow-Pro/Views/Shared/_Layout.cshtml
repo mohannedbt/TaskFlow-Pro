@@ -4,13 +4,15 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - TaskFlow Pro</title>
-    
+
+    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    
+
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    
+
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -18,7 +20,7 @@
             color: #2d3436;
         }
 
-        /* Modern Sidebar */
+        /* ===== SIDEBAR ===== */
         .sidebar {
             background: #ffffff;
             border-right: 1px solid #e9ecef;
@@ -28,31 +30,6 @@
             padding-top: 1.5rem;
         }
 
-        .main-content {
-            margin-left: 260px; /* Offset for sidebar */
-            padding: 2rem;
-        }
-
-        .nav-link {
-            color: #636e72;
-            font-weight: 500;
-            padding: 0.8rem 1.5rem;
-            border-radius: 10px;
-            margin: 0.2rem 1rem;
-            transition: all 0.2s;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            background-color: #f0f3ff;
-            color: #0d6efd;
-        }
-
-        .nav-link i {
-            margin-right: 10px;
-            font-size: 1.1rem;
-        }
-
-        /* Top Navbar Branding */
         .brand-area {
             padding: 0 1.5rem 2rem;
             font-weight: 700;
@@ -68,53 +45,105 @@
             background: #0d6efd;
             border-radius: 8px;
             margin-right: 10px;
-            display: inline-block;
         }
 
-        /* Mobile Responsiveness */
+        .nav-link {
+            color: #636e72;
+            font-weight: 500;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            margin: 0.2rem 1rem;
+            transition: all 0.2s;
+        }
+
+        .nav-link.active,
+        .nav-link:hover {
+            background-color: #f0f3ff;
+            color: #0d6efd;
+        }
+
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            margin-left: 260px;
+            padding: 2rem;
+        }
+
+        /* ===== TOP BAR ===== */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        /* ===== MOBILE ===== */
         @@media (max-width: 992px) {
-            .sidebar { display: none; }
-            .main-content { margin-left: 0; }
+            .sidebar {
+                display: none;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
         }
     </style>
 </head>
+
 <body>
 
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <!-- ===== SIDEBAR ===== -->
     <aside class="sidebar d-none d-lg-block">
         <div class="brand-area">
             <span class="brand-icon"></span>
             TaskFlow Pro
         </div>
-        
+
         <nav class="nav flex-column">
-            <a class="nav-link @(ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")" 
-               asp-controller="Task" asp-action="Index">
+
+            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Task" ? "active" : "")"
+               asp-controller="Task" asp-action="MyTasks">
                 <i class="bi bi-grid-1x2"></i> Dashboard
             </a>
-            <a class="nav-link" asp-controller="Schedule" asp-action="Index">
+
+            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Schedule" ? "active" : "")"
+               asp-controller="Schedule" asp-action="Index">
                 <i class="bi bi-calendar-check"></i> Schedule
             </a>
-            <a class="nav-link" asp-controller="Team" asp-action="Index">
+
+            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Team" ? "active" : "")"
+               asp-controller="Team" asp-action="Index">
                 <i class="bi bi-people"></i> Team
             </a>
+
             <hr class="mx-4 my-3 text-muted">
-            <a class="nav-link" href="#">
+
+            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Settings" ? "active" : "")"
+               asp-controller="Settings" asp-action="Index">
                 <i class="bi bi-gear"></i> Settings
             </a>
         </nav>
     </aside>
+}
 
-    <main class="main-content">
-        
+<!-- ===== MAIN ===== -->
+<main class="main-content">
 
+    @RenderBody()
+</main>
 
+<!-- Scripts -->
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
 
-        @RenderBody()
-    </main>
+@await RenderSectionAsync("Scripts", required: false)
 
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

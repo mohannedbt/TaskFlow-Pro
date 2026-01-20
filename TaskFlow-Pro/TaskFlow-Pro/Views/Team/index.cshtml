@@ -1,56 +1,86 @@
 ﻿@model IEnumerable<TaskFlow_Pro.Models.Team>
-
 @{
-    ViewData["Title"] = "Teams";
+    ViewData["Title"] = "Teams Directory";
 }
 
-<h3 class="fw-bold mb-3">Teams</h3>
+<div class="d-flex justify-content-between align-items-center mb-5">
+    <div>
+        <h3 class="fw-bold text-slate-900 mb-1">Teams Directory</h3>
+        <p class="text-muted small mb-0">Discover and join specialized workgroups</p>
+    </div>
+    <div class="bg-primary-soft text-primary px-3 py-2 rounded-pill fw-bold small">
+        <i class="bi bi-people-fill me-2"></i>@Model.Count() Active Teams
+    </div>
+</div>
 
 @if (TempData["Error"] != null)
 {
-    <div class="alert alert-danger">@TempData["Error"]</div>
+    <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4">
+        <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+    </div>
 }
 
-<!-- CREATE TEAM -->
-<div class="card mb-4 shadow-sm">
-    <div class="card-body">
+<div class="card border-0 shadow-sm mb-5" style="border-radius: 20px; background: #f8fafc;">
+    <div class="card-body p-4">
         <form asp-action="Create" method="post">
             @Html.AntiForgeryToken()
-
-            <div class="row g-2">
-                <div class="col-md-4">
-                    <input name="name" class="form-control" placeholder="Team name" required />
+            <div class="row g-3 align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold text-muted text-uppercase">Team Name</label>
+                    <input name="name" class="form-control border-0 shadow-sm rounded-3" placeholder="e.g. Design Ops" required />
                 </div>
                 <div class="col-md-6">
-                    <input name="description" class="form-control" placeholder="Description (optional)" />
+                    <label class="form-label small fw-bold text-muted text-uppercase">Mission Description</label>
+                    <input name="description" class="form-control border-0 shadow-sm rounded-3" placeholder="What does this team achieve?" />
                 </div>
-                <div class="col-md-2">
-                    <button class="btn btn-primary w-100 fw-bold">Create</button>
+                <div class="col-md-3">
+                    <label class="form-label d-none d-md-block">&nbsp;</label>
+                    <button class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-sm">
+                        <i class="bi bi-plus-circle me-2"></i>Launch Team
+                    </button>
                 </div>
             </div>
         </form>
     </div>
 </div>
 
-<!-- TEAM LIST -->
-<div class="row g-3">
+<div class="row g-4">
     @foreach (var team in Model)
     {
-        <div class="col-md-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="fw-bold">@team.Name</h5>
-                    <p class="text-muted small">@team.Description</p>
+        <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100 transition-hover" style="border-radius: 24px;">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between mb-3">
+                        <div class="bg-light rounded-4 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                            <i class="bi bi-unity fs-3 text-primary"></i>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-light text-dark rounded-pill px-3">@team.Members.Count Members</span>
+                        </div>
+                    </div>
 
-                    <div class="small text-muted mb-2">
-                        Members: @team.Members.Count
+                    <h5 class="fw-bold text-slate-900 mb-2">@team.Name</h5>
+                    <p class="text-muted small mb-4" style="min-height: 40px;">@team.Description</p>
+
+                    <div class="d-flex mb-4 overflow-hidden">
+                        @foreach (var member in team.Members.Take(5))
+                        {
+                            <img src="https://ui-avatars.com/api/?name=@member.UserName&background=random&color=fff" 
+                                 class="rounded-circle border border-2 border-white" 
+                                 style="width: 32px; height: 32px; margin-right: -10px;" />
+                        }
+                        @if (team.Members.Count > 5)
+                        {
+                            <div class="rounded-circle bg-light border border-2 border-white d-flex align-items-center justify-content-center small fw-bold" 
+                                 style="width: 32px; height: 32px; font-size: 10px;">+@(team.Members.Count - 5)</div>
+                        }
                     </div>
 
                     <form asp-action="Join" method="post">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="teamId" value="@team.Id" />
-                        <button class="btn btn-outline-primary btn-sm w-100">
-                            Join Team
+                        <button class="btn btn-outline-primary w-100 rounded-3 fw-bold py-2">
+                            Request to Join
                         </button>
                     </form>
                 </div>

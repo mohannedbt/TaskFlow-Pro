@@ -4,50 +4,17 @@ using TaskFlow_Pro.Repositories.Interfaces;
 using TaskFlow_Pro.Services.Interfaces;
 
 namespace TaskFlow_Pro.Services.Implementations;
-
 public class TaskService : ITaskService
 {
-    public ITaskRepository _Taskrepo;
-    public ApplicationDbContext _context;
-    public UserManager<ApplicationUser> _userManager;
-    
-    private static readonly Dictionary<State, HashSet<State>> AllowedTransitions =
-        new()
-        {
-            { State.NotAssigned, new() { State.Ongoing } },
+    private readonly ITaskRepository _repo;
+    private readonly ITeamService _teamService;
 
-            { State.Ongoing, new()
-                {
-                    State.Interrupted,
-                    State.Completed
-                }
-            },
-
-            { State.Interrupted, new()
-                {
-                    State.Ongoing,
-                    State.Canceled
-                }
-            },
-
-            { State.Completed, new() },
-            { State.Canceled, new() }
-        };
-
-
-    public TaskService(ITaskRepository repo, ApplicationDbContext context,UserManager<ApplicationUser> userManager)
+    public TaskService(
+        ITaskRepository repo,
+        ITeamService teamService)
     {
-        _Taskrepo = repo;
-        _context = context;
-        _userManager=userManager;
-        
-    }
-    public async Task<List<TaskItem>> GetTasksByStateAsync(State state)
-        => await _Taskrepo.GetTasksByStateAsync(state);
-
-    public async Task<List<TaskItem>> SearchTasksAsync(string q)
-    {
-        return await _Taskrepo.SearchTasksAsync(q);
+        _repo = repo;
+        _teamService = teamService;
     }
 
     public async Task<TaskItem> CreateTaskAsync(
@@ -57,86 +24,191 @@ public class TaskService : ITaskService
         DateTime startDate,
         DateTime endDate)
     {
-        var item = new TaskItem
+        var task = new TaskItem
         {
             Title = title,
             Description = description,
             StartDate = startDate,
             EndDate = endDate,
-
-            // ✅ ONLY SET THE FK
             CreatedById = creatorUserId,
-
             State = State.NotAssigned
         };
 
-        await _Taskrepo.AddAsync(item);
-        return item;
+        await _repo.AddAsync(task);
+        return task;
     }
 
 
-    public async  Task<List<TaskItem>> GetAllTasksAsync()
+    public async Task AssignTaskToTeamAsync(int taskId, int teamId)
     {
-        return await _Taskrepo.GetAllAsync();
-    }
+        var task = await _repo.GetByIdAsync(taskId);
+        if (task == null) return;
 
-    public async Task<List<TaskItem>> GetAllTasksByIDAsync(string id)
-    {
-        return await _Taskrepo.GetAllByCreator(id);
-    }
+        var members = await _teamService.GetTeamMembersAsync(teamId);
 
-
-public async Task AssignTaskAsync(int taskId, ApplicationUser assignedUser)
-{
-    TaskItem taskItem = await _Taskrepo.GetByIdAsync(taskId);
-    taskItem.AssignedTo=assignedUser;
-    await _Taskrepo.UpdateAsync(taskItem);
-}
-
-public async Task ChangeTaskStateAsync(int taskId, State newState, string actingUserId)
-    {
-        TaskItem taskItem= await _Taskrepo.GetByIdAsync(taskId);
-        if (AllowedTransitions[taskItem.State].Contains(newState))
+        foreach (var member in members)
         {
-            taskItem.State=newState;
-            await _Taskrepo.UpdateAsync(taskItem);
+            if (!task.AssignedUsers.Any(u => u.Id == member.Id))
+                task.AssignedUsers.Add(member);
         }
-    }
-    public async Task<List<TaskItem>> GetTasksForTodayAsync()
-    {
-        return await _Taskrepo.GetRecentTasksAsync(1);
+
+        task.State = State.Ongoing;
+        await _repo.UpdateAsync(task);
     }
 
-    public async Task<List<TaskItem>> GetTasksForThisWeekAsync()
+    public async Task ChangeTaskStateAsync(
+        int taskId,
+        State newState,
+        string userId)
     {
-        return await _Taskrepo.GetRecentTasksAsync(7);
+        var task = await _repo.GetByIdAsync(taskId);
+        if (task == null) return;
+
+        // optional: permission checks here
+
+        task.State = newState;
+        await _repo.UpdateAsync(task);
     }
 
-    public async Task<List<TaskItem>> GetTasksByDateRangeAsync(DateTime from, DateTime to)
-    {
-        var all = await _Taskrepo.GetAllAsync();
+    public async Task<List<TaskItem>> GetAllTasksByCreatorIDAsync(string id)
+        => await _repo.GetAllByCreator(id);
 
-        return all
-            .Where(t =>
-                t.StartDate.Date >= from.Date &&
-                t.EndDate.Date <= to.Date)
-            .ToList();
+    public async Task<List<TaskItem>> GetAllTasksByAssignedIdAsync(string id)
+        => await _repo.GetTasksAssignedToUserAsync(id);
+
+    public async Task<List<TaskItem>> GetAllTasksByTeamIdAsync(int teamId)
+    {
+        return await _repo.GetAllAsync()
+            .ContinueWith(t => t.Result.Where(x => x.TeamId == teamId).ToList());
     }
 
-    public async Task<List<TaskItem>> GetTasksOrderedByDateAsync()
+    public async Task<TaskItem> GetAllTasksByTaskIdAsync(int taskId)
     {
-        return await _Taskrepo.GetTasksOrderedByDateAsync();
+        return await _repo.GetByIdAsync(taskId);
     }
 
-    public async Task UpdateTaskAsync(TaskItem task)
+    public async Task<List<TaskItem>> GetAllTasks()
     {
-         await _Taskrepo.UpdateAsync(task);
-        
+        return await _repo.GetAllAsync();
+    }
+    public Task<List<TaskItem>> ApplyFiltersAsync(List<TaskItem> tasks, TaskFilterViewModel f)
+    {
+        IEnumerable<TaskItem> q = tasks;
+
+        // Search
+        if (!string.IsNullOrWhiteSpace(f.Q))
+        {
+            var term = f.Q.Trim();
+            q = q.Where(t =>
+                (t.Title != null && t.Title.Contains(term, StringComparison.OrdinalIgnoreCase)) ||
+                (t.Description != null && t.Description.Contains(term, StringComparison.OrdinalIgnoreCase)));
+        }
+
+        // State
+        if (f.State.HasValue)
+            q = q.Where(t => t.State == f.State.Value);
+
+        // Only unassigned (TeamId == null)
+        if (f.OnlyUnassigned)
+            q = q.Where(t => t.TeamId == null);
+
+        // Date range
+        if (f.Range == "today")
+        {
+            var today = DateTime.Today;
+            q = q.Where(t => t.StartDate.Date == today);
+        }
+        else if (f.Range == "week")
+        {
+            var start = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
+            var end = start.AddDays(7);
+            q = q.Where(t => t.StartDate >= start && t.StartDate < end);
+        }
+        else if (f.Range == "custom" && f.From.HasValue && f.To.HasValue)
+        {
+            q = q.Where(t => t.StartDate >= f.From.Value && t.EndDate <= f.To.Value);
+        }
+
+        // Sorting
+        q = f.Sort switch
+        {
+            "start_asc" => q.OrderBy(t => t.StartDate),
+            "end_asc"   => q.OrderBy(t => t.EndDate),
+            "end_desc"  => q.OrderByDescending(t => t.EndDate),
+            _           => q.OrderByDescending(t => t.StartDate), // start_desc default
+        };
+
+        return Task.FromResult(q.ToList());
+    }
+    public async Task SetMyProgressStateAsync(int taskId, string userId, State newState)
+    {
+        // Make sure task exists + load progress
+        var task = await _repo.GetTaskWithProgressAsync(taskId);
+        if (task == null) throw new Exception("Task not found.");
+
+        // Optionally: user must belong to the task's team
+        // (depends on your rules)
+
+        var progress = await _repo.GetProgressAsync(taskId, userId);
+
+        if (progress == null)
+        {
+            progress = new TaskUserProgress
+            {
+                TaskItemId = taskId,
+                UserId = userId,
+                State = State.Ongoing
+            };
+            await _repo.AddProgressAsync(progress);
+        }
+
+        progress.State = newState;
+        progress.CompletedAt = (newState == State.Completed) ? DateTime.UtcNow : null;
+
+        await _repo.SaveAsync();
+        await RecomputeTaskStateAsync(taskId);
     }
 
-    public async Task<TaskItem> GetTaskByIdAsync(int taskId)
+    public async Task RecomputeTaskStateAsync(int taskId)
     {
-        return await _Taskrepo.GetByIdAsync(taskId);
+        var task = await _repo.GetTaskWithProgressAsync(taskId);
+        if (task == null) return;
+
+        // if no team => NotAssigned
+        if (!task.TeamId.HasValue)
+        {
+            task.State = State.NotAssigned;
+            await _repo.SaveAsync();
+            return;
+        }
+
+        var states = task.UserProgresses.Select(p => p.State).ToList();
+
+        // no assignees/progress rows => leave it ongoing (or keep old)
+        if (states.Count == 0)
+        {
+            if (task.State == State.NotAssigned) task.State = State.Ongoing;
+            await _repo.SaveAsync();
+            return;
+        }
+
+        bool allCompleted = states.All(s => s == State.Completed);
+        bool anyOngoing = states.Any(s => s == State.Ongoing);
+        bool anyInterrupted = states.Any(s => s == State.Interrupted);
+
+        task.State =
+            allCompleted ? State.Completed :
+            anyOngoing ? State.Ongoing :
+            anyInterrupted ? State.Interrupted :
+            State.Ongoing;
+
+        await _repo.SaveAsync();
     }
+
+    public Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId)
+        => _repo.GetTasksAssignedToUserAsync(userId);
+
+    public Task<State?> GetMyStateAsync(int taskId, string userId)
+        => _repo.GetMyStateAsync(taskId, userId);
 }
-    
+

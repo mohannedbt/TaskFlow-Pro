@@ -1,51 +1,52 @@
 ﻿using TaskFlow_Pro.Models;
-using TaskFlow_Pro.Models;
 
-namespace TaskFlow_Pro.Services.Interfaces
+namespace TaskFlow_Pro.Services.Interfaces;
+
+public interface ITaskService
 {
-    public interface ITaskService
-    {
-        // ========================
-        // Creation
-        // ========================
+    // =========================
+    // CREATE
+    // =========================
+    Task<TaskItem> CreateTaskAsync(
+        string title,
+        string description,
+        string creatorUserId,
+        DateTime startDate,
+        DateTime endDate);
+    
 
-        Task<TaskItem> CreateTaskAsync(string title, string description, string? creatorUserId, DateTime startDate,
-            DateTime endDate);
-        // ========================
-        // Assignment
-        // ========================
+    // =========================
+    // ASSIGNMENT
+    // =========================
+    Task AssignTaskToTeamAsync(int taskId, int teamId);
 
-        Task AssignTaskAsync(
-            int taskId,
-            ApplicationUser assignedUser
-        );
+    // =========================
+    // STATE
+    // =========================
+    Task ChangeTaskStateAsync(
+        int taskId,
+        State newState,
+        string userId);
 
-        // ========================
-        // State management
-        // ========================
+    // =========================
+    // QUERIES
+    // =========================
+    Task<List<TaskItem>> GetAllTasksByCreatorIDAsync(string userId);
+    Task<List<TaskItem>> GetAllTasksByAssignedIdAsync(string userId);
+    Task<List<TaskItem>> GetAllTasksByTeamIdAsync(int teamId);
+    Task<TaskItem> GetAllTasksByTaskIdAsync(int taskId);
+    Task<List<TaskItem>> GetAllTasks();
+    Task<List<TaskItem>> ApplyFiltersAsync(List<TaskItem> tasks, TaskFilterViewModel f);
+    Task SetMyProgressStateAsync(int taskId, string userId, State newState);
+    Task RecomputeTaskStateAsync(int taskId);
+    Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId);
 
-        Task ChangeTaskStateAsync(
-            int taskId,
-            State newState,
-            string actingUserId
-        );
-        Task<List<TaskItem>> GetAllTasksAsync();
-
-        Task<List<TaskItem>> SearchTasksAsync(string keyword);
-
-        Task<List<TaskItem>> GetTasksForTodayAsync();
-
-        Task<List<TaskItem>> GetTasksForThisWeekAsync();
-
-        Task<List<TaskItem>> GetTasksByDateRangeAsync(DateTime from, DateTime to);
-
-        Task<List<TaskItem>> GetTasksOrderedByDateAsync();
-        Task<List<TaskItem>> GetTasksByStateAsync(State state);
-        Task UpdateTaskAsync(TaskItem task);
-        Task<TaskItem> GetTaskByIdAsync(int taskId);
-        Task<List<TaskItem>> GetAllTasksByIDAsync(string id);
+    Task<State?> GetMyStateAsync(int taskId, string userId);
 
 
 
-    }
+
+
+
+
 }

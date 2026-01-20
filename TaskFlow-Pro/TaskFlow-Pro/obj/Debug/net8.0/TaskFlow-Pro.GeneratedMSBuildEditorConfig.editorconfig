@@ -42,6 +42,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2NoZWR1bGVcaW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Settings/index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2V0dGluZ3NcaW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Shared/AccessDenied.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEFjY2Vzc0RlbmllZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -58,8 +66,8 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGFza1xjcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Task/index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGFza1xpbmRleC5jc2h0bWw=
+[D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Task/TaskList.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGFza1xUYXNrTGlzdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Team/index.cshtml]

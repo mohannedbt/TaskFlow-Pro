@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskFlow_Pro.Models;
 
@@ -11,9 +12,11 @@ using TaskFlow_Pro.Models;
 namespace TaskFlow_Pro.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260119185430_refactoring2")]
+    partial class refactoring2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -261,6 +264,53 @@ namespace TaskFlow_Pro.Migrations
                     b.ToTable("Comments");
                 });
 
+            modelBuilder.Entity("TaskFlow_Pro.Models.TaskItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AssignedToId")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("CreatedById")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("Duration")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<int>("State")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TeamId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("TeamId");
+
+                    b.ToTable("Tasks");
+                });
+
             modelBuilder.Entity("TaskFlow_Pro.Models.Team", b =>
                 {
                     b.Property<int>("Id")
@@ -288,78 +338,6 @@ namespace TaskFlow_Pro.Migrations
                     b.HasIndex("LeaderId");
 
                     b.ToTable("Teams");
-                });
-
-            modelBuilder.Entity("TaskItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("CreatedById")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("State")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("TeamId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("TeamId");
-
-                    b.ToTable("Tasks");
-                });
-
-            modelBuilder.Entity("TaskUserProgress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("State")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TaskItemId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("TaskItemId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("TaskUserProgresses");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -415,8 +393,8 @@ namespace TaskFlow_Pro.Migrations
 
             modelBuilder.Entity("TaskFlow_Pro.Models.ApplicationUser", b =>
                 {
-                    b.HasOne("TaskItem", null)
-                        .WithMany("AssignedUsers")
+                    b.HasOne("TaskFlow_Pro.Models.TaskItem", null)
+                        .WithMany("AssignedTo")
                         .HasForeignKey("TaskItemId");
 
                     b.HasOne("TaskFlow_Pro.Models.Team", "Team")
@@ -433,8 +411,8 @@ namespace TaskFlow_Pro.Migrations
                         .WithMany()
                         .HasForeignKey("CreatedById");
 
-                    b.HasOne("TaskItem", "ToTaskItem")
-                        .WithMany()
+                    b.HasOne("TaskFlow_Pro.Models.TaskItem", "ToTaskItem")
+                        .WithMany("Comments")
                         .HasForeignKey("ToTaskItemId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -444,18 +422,7 @@ namespace TaskFlow_Pro.Migrations
                     b.Navigation("ToTaskItem");
                 });
 
-            modelBuilder.Entity("TaskFlow_Pro.Models.Team", b =>
-                {
-                    b.HasOne("TaskFlow_Pro.Models.ApplicationUser", "Leader")
-                        .WithMany()
-                        .HasForeignKey("LeaderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Leader");
-                });
-
-            modelBuilder.Entity("TaskItem", b =>
+            modelBuilder.Entity("TaskFlow_Pro.Models.TaskItem", b =>
                 {
                     b.HasOne("TaskFlow_Pro.Models.ApplicationUser", "CreatedBy")
                         .WithMany()
@@ -472,40 +439,27 @@ namespace TaskFlow_Pro.Migrations
                     b.Navigation("Team");
                 });
 
-            modelBuilder.Entity("TaskUserProgress", b =>
+            modelBuilder.Entity("TaskFlow_Pro.Models.Team", b =>
                 {
-                    b.HasOne("TaskItem", "TaskItem")
-                        .WithMany("UserProgresses")
-                        .HasForeignKey("TaskItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("TaskFlow_Pro.Models.ApplicationUser", "Leader")
+                        .WithMany()
+                        .HasForeignKey("LeaderId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("TaskFlow_Pro.Models.ApplicationUser", "User")
-                        .WithMany("TaskProgresses")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TaskItem");
-
-                    b.Navigation("User");
+                    b.Navigation("Leader");
                 });
 
-            modelBuilder.Entity("TaskFlow_Pro.Models.ApplicationUser", b =>
+            modelBuilder.Entity("TaskFlow_Pro.Models.TaskItem", b =>
                 {
-                    b.Navigation("TaskProgresses");
+                    b.Navigation("AssignedTo");
+
+                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("TaskFlow_Pro.Models.Team", b =>
                 {
                     b.Navigation("Members");
-                });
-
-            modelBuilder.Entity("TaskItem", b =>
-                {
-                    b.Navigation("AssignedUsers");
-
-                    b.Navigation("UserProgresses");
                 });
 #pragma warning restore 612, 618
         }

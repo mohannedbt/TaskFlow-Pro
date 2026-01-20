@@ -10,4 +10,6 @@ public class ApplicationUser : IdentityUser
 
     // Navigation
     public Team? Team { get; set; }
+    public ICollection<TaskUserProgress> TaskProgresses { get; set; } = new List<TaskUserProgress>();
+
 }

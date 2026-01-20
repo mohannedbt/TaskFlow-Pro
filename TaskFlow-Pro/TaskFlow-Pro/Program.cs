@@ -29,6 +29,11 @@ builder.Services.AddScoped<ITaskService, TaskService>();
 builder.Services.AddScoped<ITaskRepository,TaskRepository>();
 builder.Services.AddScoped<ITeamRepository,TeamRepository>();
 builder.Services.AddScoped<ITeamService, TeamService>();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.LoginPath = "/Account/Login";
+});
 
 
 // ===== MVC + Razor Pages =====

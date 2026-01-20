@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaskFlow_Pro.Models;
 
@@ -11,9 +12,11 @@ using TaskFlow_Pro.Models;
 namespace TaskFlow_Pro.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260119204107_refactoring3")]
+    partial class refactoring3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -331,37 +334,6 @@ namespace TaskFlow_Pro.Migrations
                     b.ToTable("Tasks");
                 });
 
-            modelBuilder.Entity("TaskUserProgress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<int>("State")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TaskItemId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("TaskItemId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("TaskUserProgresses");
-                });
-
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -472,30 +444,6 @@ namespace TaskFlow_Pro.Migrations
                     b.Navigation("Team");
                 });
 
-            modelBuilder.Entity("TaskUserProgress", b =>
-                {
-                    b.HasOne("TaskItem", "TaskItem")
-                        .WithMany("UserProgresses")
-                        .HasForeignKey("TaskItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TaskFlow_Pro.Models.ApplicationUser", "User")
-                        .WithMany("TaskProgresses")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TaskItem");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("TaskFlow_Pro.Models.ApplicationUser", b =>
-                {
-                    b.Navigation("TaskProgresses");
-                });
-
             modelBuilder.Entity("TaskFlow_Pro.Models.Team", b =>
                 {
                     b.Navigation("Members");
@@ -504,8 +452,6 @@ namespace TaskFlow_Pro.Migrations
             modelBuilder.Entity("TaskItem", b =>
                 {
                     b.Navigation("AssignedUsers");
-
-                    b.Navigation("UserProgresses");
                 });
 #pragma warning restore 612, 618
         }

@@ -8,6 +8,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<TaskItem>  Tasks { get; set; }
     public DbSet<Comment>  Comments { get; set; }
     public DbSet<Team>   Teams { get; set; }
+    public DbSet<TaskUserProgress> TaskUserProgresses { get; set; } = null!;
+
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options){}
 
@@ -27,6 +29,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany()
             .HasForeignKey(t => t.LeaderId)
             .OnDelete(DeleteBehavior.Restrict);
+        builder.Entity<TaskUserProgress>()
+            .HasIndex(p => new { p.TaskItemId, p.UserId })
+            .IsUnique(); // ✅ one row per (Task, User)
+
+        builder.Entity<TaskUserProgress>()
+            .HasOne(p => p.TaskItem)
+            .WithMany(t => t.UserProgresses)
+            .HasForeignKey(p => p.TaskItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<TaskUserProgress>()
+            .HasOne(p => p.User)
+            .WithMany(u => u.TaskProgresses)
+            .HasForeignKey(p => p.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
 
     }
 

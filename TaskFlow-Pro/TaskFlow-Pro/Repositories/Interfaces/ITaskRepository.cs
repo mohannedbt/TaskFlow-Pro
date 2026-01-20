@@ -1,78 +1,24 @@
 ﻿using TaskFlow_Pro.Models;
 
-namespace TaskFlow_Pro.Repositories.Interfaces
+namespace TaskFlow_Pro.Repositories.Interfaces;
+
+public interface ITaskRepository
 {
-    public interface ITaskRepository
-    {
-        // =====================================================
-        // BASIC QUERIES (foundational LINQ)
-        // =====================================================
+    Task AddAsync(TaskItem task);
+    Task UpdateAsync(TaskItem task);
+    Task DeleteAsync(TaskItem task);
 
-        /// <summary>
-        /// Get a task by its ID (with related data).
-        /// </summary>
-        Task<TaskItem?> GetByIdAsync(int taskId);
+    Task<TaskItem?> GetByIdAsync(int taskId);
 
-        /// <summary>
-        /// Get all tasks.
-        /// </summary>
-        Task<List<TaskItem>> GetAllAsync();
+    Task<List<TaskItem>> GetAllAsync();
+    Task<List<TaskItem>> GetAllByCreator(string creatorId);
+    Task<TaskItem?> GetTaskWithProgressAsync(int taskId);
+    Task<TaskUserProgress?> GetProgressAsync(int taskId, string userId);
+    Task AddProgressAsync(TaskUserProgress progress);
+    Task SaveAsync();
 
-        /// <summary>
-        /// Get tasks assigned to a given user.
-        /// </summary>
-        Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId);
+    Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId); // modern "MyAssigned"
+    Task<List<TaskUserProgress>> GetProgressRowsForTaskAsync(int taskId);
+    Task<State?> GetMyStateAsync(int taskId, string userId);
 
-        /// <summary>
-        /// Get tasks filtered by state.
-        /// </summary>
-        Task<List<TaskItem>> GetTasksByStateAsync(State state);
-
-        // =====================================================
-        // ADVANCED QUERIES (REAL LINQ SKILLS)
-        // =====================================================
-
-
-        /// <summary>
-        /// Get tasks waiting for review.
-        /// </summary>
-        Task<List<TaskItem>> GetTasksWaitingForReviewAsync();
-
-        /// <summary>
-        /// Get tasks created in the last X days.
-        /// </summary>
-        Task<List<TaskItem>> GetRecentTasksAsync(int days);
-
-        /// <summary>
-        /// Get tasks grouped by state.
-        /// </summary>
-        Task<Dictionary<State, int>> GetTaskCountByStateAsync();
-
-        /// <summary>
-        /// Get tasks ordered by creation date (newest first).
-        /// </summary>
-        Task<List<TaskItem>> GetTasksOrderedByDateAsync();
-
-        /// <summary>
-        /// Search tasks by keyword in title or description.
-        /// </summary>
-        Task<List<TaskItem>> SearchTasksAsync(string keyword);
-
-        // =====================================================
-        // WRITE OPERATIONS (ASYNC DB MODIFICATIONS)
-        // =====================================================
-
-        /// <summary>
-        /// Add a new task.
-        /// </summary>
-        Task AddAsync(TaskItem task);
-
-        /// <summary>
-        /// Update an existing task.
-        /// </summary>
-        Task UpdateAsync(TaskItem task);
-
-        public Task<List<TaskItem>> GetAllByCreator(string id);
-
-    }
 }

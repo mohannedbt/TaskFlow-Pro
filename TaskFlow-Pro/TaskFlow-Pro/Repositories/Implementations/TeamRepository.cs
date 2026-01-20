@@ -21,7 +21,7 @@ namespace TaskFlow_Pro.Repositories.Implementations
                 .ToListAsync();
         }
 
-        public async Task<Team?> GetByIdAsync(int id)
+        public async Task<Team?> GetByIdAsync(int ? id)
         {
             return await _context.Teams
                 .Include(t => t.Leader)

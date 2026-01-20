@@ -3,95 +3,19 @@ using TaskFlow_Pro.Models;
 using TaskFlow_Pro.Repositories.Interfaces;
 
 namespace TaskFlow_Pro.Repositories.Implementations;
-
-public class TaskRepository: ITaskRepository
+public class TaskRepository : ITaskRepository
 {
-    public ApplicationDbContext _context { get; set; }
+    private readonly ApplicationDbContext _context;
 
     public TaskRepository(ApplicationDbContext context)
     {
         _context = context;
     }
+
     public async Task AddAsync(TaskItem task)
     {
-        await _context.Tasks.AddAsync(task);
+        _context.Tasks.Add(task);
         await _context.SaveChangesAsync();
-    }
-
-    public async Task DeleteAsync(TaskItem task)
-    {
-         _context.Tasks.Remove(task);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task<List<TaskItem>> GetAllAsync()
-    {
-        var list=await _context.Tasks.ToListAsync();
-        return list;
-    }
-
-    public async Task<List<TaskItem>> GetAllByCreator(string id)
-    {
-        var list= await _context.Tasks.ToListAsync();
-        var query= from t in list where t.CreatedById == id select t;
-        return query.ToList();
-    }
-
-    public async Task<TaskItem?> GetByIdAsync(int taskId)
-    {
-        var data =await _context.Tasks.ToListAsync();
-        var query=from t in data where  t.Id == taskId select t;
-        return query.FirstOrDefault();
-    }
-
-    public async Task<List<TaskItem>> GetRecentTasksAsync(int days)
-    {
-        var data = await _context.Tasks.ToListAsync();
-        var query = from t in data where t.StartDate > DateTime.Now.AddDays(-days) select t;
-        return query.ToList();
-    }
-
-    public async Task<Dictionary<State, int>> GetTaskCountByStateAsync()
-    {
-        var data = await _context.Tasks.ToListAsync();
-        var query=from t in data group t.State by t.State;
-        return query.ToDictionary(x=>x.Key,x=>x.Count());
-    }
-
-    public async Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId)
-    {
-        var data = await _context.Tasks.Include(u=>u.AssignedTo).ToListAsync();
-        var query = from t in data where t.AssignedTo.Id==userId select t;
-        return query.ToList();
-    }
-
-    public async Task<List<TaskItem>> GetTasksByStateAsync(State state)
-    {
-        var data = await _context.Tasks.ToListAsync();
-        var query = from t in data where t.State == state select t;
-        return query.ToList();
-    }
-    
-
-    public async Task<List<TaskItem>> GetTasksOrderedByDateAsync()
-    {
-        var data = await _context.Tasks.ToListAsync();
-        var query = from t in data orderby t.StartDate descending select t;
-        return query.ToList();
-    }
-
-    public async Task<List<TaskItem>> GetTasksWaitingForReviewAsync()
-    {
-        var data = await _context.Tasks.Include(t=>t.Comments).ToListAsync();
-        var query = from t in data where t.Comments.Count==0 orderby t.EndDate descending select t;
-        return query.ToList();
-    }
-
-    public async Task<List<TaskItem>> SearchTasksAsync(string keyword)
-    {
-        var data = await _context.Tasks.ToListAsync();
-        var query=from t in data where t.Description.Contains(keyword)|| t.Title.Contains(keyword) select t;
-        return query.ToList();
     }
 
     public async Task UpdateAsync(TaskItem task)
@@ -99,4 +23,101 @@ public class TaskRepository: ITaskRepository
         _context.Tasks.Update(task);
         await _context.SaveChangesAsync();
     }
+
+    public async Task DeleteAsync(TaskItem task)
+    {
+        _context.Tasks.Remove(task);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<TaskItem?> GetByIdAsync(int taskId)
+    {
+        return await _context.Tasks
+            .Include(t => t.AssignedUsers)
+            .FirstOrDefaultAsync(t => t.Id == taskId);
+    }
+
+    public async Task<List<TaskItem>> GetAllAsync()
+    {
+        return await _context.Tasks
+            .Include(t => t.AssignedUsers)
+            .ToListAsync();
+    }
+
+    public async Task<List<TaskItem>> GetAllByCreator(string userId)
+    {
+        return await _context.Tasks
+            .Where(t => t.CreatedById == userId)
+            .Include(t => t.AssignedUsers)
+            .ToListAsync();
+    }
+
+
+
+    public async Task<List<TaskItem>> GetTasksByStateAsync(State state)
+    {
+        return await _context.Tasks
+            .Where(t => t.State == state)
+            .ToListAsync();
+    }
+
+    public async Task<List<TaskItem>> GetTasksOrderedByDateAsync()
+    {
+        return await _context.Tasks
+            .OrderByDescending(t => t.StartDate)
+            .ToListAsync();
+    }
+
+    public async Task<List<TaskUserProgress>> GetAllTaskUserProgressAsync()
+    {
+        return await _context.TaskUserProgresses.ToListAsync();
+    }
+    public async Task<TaskItem?> GetTaskWithProgressAsync(int taskId)
+    {
+        return await _context.Tasks
+            .Include(t => t.UserProgresses)
+            .FirstOrDefaultAsync(t => t.Id == taskId);
+    }
+
+    public async Task<TaskUserProgress?> GetProgressAsync(int taskId, string userId)
+    {
+        return await _context.TaskUserProgresses
+            .FirstOrDefaultAsync(p => p.TaskItemId == taskId && p.UserId == userId);
+    }
+
+    public async Task AddProgressAsync(TaskUserProgress progress)
+    {
+        await _context.TaskUserProgresses.AddAsync(progress);
+    }
+
+    public async Task SaveAsync()
+    {
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId)
+    {
+        // tasks where this user has a progress row
+        return await _context.TaskUserProgresses
+            .Where(p => p.UserId == userId)
+            .Select(p => p.TaskItem)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    public async Task<List<TaskUserProgress>> GetProgressRowsForTaskAsync(int taskId)
+    {
+        return await _context.TaskUserProgresses
+            .Include(p => p.User)
+            .Where(p => p.TaskItemId == taskId)
+            .ToListAsync();
+    }
+    public async Task<State?> GetMyStateAsync(int taskId, string userId)
+    {
+        return await _context.TaskUserProgresses
+            .Where(p => p.TaskItemId == taskId && p.UserId == userId)
+            .Select(p => (State?)p.State)
+            .FirstOrDefaultAsync();
+    }
+
 }

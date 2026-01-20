@@ -53,7 +53,7 @@ namespace TaskFlow_Pro.Controllers
                 // ✅ OPTIONAL BUT RECOMMENDED:
                 // Auto-login after successful registration
                 await _signInManager.SignInAsync(user, isPersistent: false);
-                return RedirectToAction("Index", "Task");
+                return RedirectToAction("MyTasks", "Task");
             }
 
             // 🔴 YOU MUST DO THIS:
@@ -99,7 +99,7 @@ namespace TaskFlow_Pro.Controllers
             );
 
             if (result.Succeeded)
-                return RedirectToAction("Index", "Task");
+                return RedirectToAction("MyTasks", "Task");
 
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
@@ -116,5 +116,11 @@ namespace TaskFlow_Pro.Controllers
             await _signInManager.SignOutAsync();
             return RedirectToAction("Login", "Account");
         }
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+
     }
 }

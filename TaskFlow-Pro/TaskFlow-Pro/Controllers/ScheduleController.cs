@@ -30,7 +30,7 @@ namespace TaskFlow_Pro.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEvents()
         {
-            var tasks = await _taskService.GetAllTasksAsync();
+            var tasks = await _taskService.GetAllTasks();
 
             var events = tasks.Select(t => new
             {

@@ -1,61 +1,126 @@
 ﻿@model TaskFlow_Pro.Models.Team?
-
 @{
-    ViewData["Title"] = "My Team";
+    ViewData["Title"] = "My Team Hub";
 }
 
-<h3 class="fw-bold mb-3">My Team</h3>
+<div class="container py-4">
+    @if (Model == null)
+    {
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <i class="bi bi-people text-light" style="font-size: 5rem;"></i>
+            </div>
+            <h3 class="fw-bold">No Team Found</h3>
+            <p class="text-muted">You are not currently assigned to a team workspace.</p>
+            <a asp-action="Index" class="btn btn-primary rounded-pill px-4 fw-bold">Browse Teams</a>
+        </div>
+        return;
+    }
 
-@if (Model == null)
-{
-    <div class="alert alert-info">
-        You are not part of any team yet.
-        <a asp-action="Index" class="fw-bold">Browse teams</a>
+    <div class="card border-0 shadow-lg mb-4" style="border-radius: 24px; background: linear-gradient(to right, #ffffff, #f8fafc);">
+        <div class="card-body p-4 p-md-5">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <span class="badge bg-primary-soft text-primary px-3 py-2 rounded-pill mb-3 fw-bold">Active Workspace</span>
+                    <h2 class="display-6 fw-bold text-slate-900">@Model.Name</h2>
+                    <p class="lead text-muted">@Model.Description</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-4 mt-md-0">
+                    <form asp-action="Leave" method="post" onsubmit="return confirm('Are you sure you want to leave this team?');">
+                        @Html.AntiForgeryToken()
+                        <button class="btn btn-outline-danger rounded-3 px-4 fw-bold">
+                            <i class="bi bi-box-arrow-left me-2"></i>Leave Team
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
-    return;
-}
 
-<div class="card shadow-lg">
-    <div class="card-body">
-
-        <h4 class="fw-bold">@Model.Name</h4>
-        <p class="text-muted">@Model.Description</p>
-
-        <hr />
-
-        <h6 class="fw-bold">Members</h6>
-
-        <ul class="list-group mb-3">
-            @foreach (var member in Model.Members)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        @member.UserName
-                        @if (member.Id == Model.LeaderId)
-                        {
-                            <span class="badge bg-primary ms-2">Leader</span>
-                        }
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-white border-0 p-4 pb-0">
+                    <h5 class="fw-bold m-0">Team Members</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="text-muted small text-uppercase">
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Role</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var member in Model.Members)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <img src="https://ui-avatars.com/api/?name=@member.UserName&background=random" 
+                                                     class="rounded-circle" width="40" height="40" />
+                                                <span class="fw-bold text-slate-900">@member.UserName</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if (member.Id == Model.LeaderId)
+                                            {
+                                                <span class="badge bg-warning-soft text-warning-emphasis px-3 rounded-pill">
+                                                    <i class="bi bi-crown-fill me-1"></i> Team Leader
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-light text-muted px-3 rounded-pill">Contributor</span>
+                                            }
+                                        </td>
+                                        <td class="text-end">
+                                            @if (User.Identity?.Name == Model.Leader?.UserName && member.Id != Model.LeaderId)
+                                            {
+                                                <form asp-action="RemoveMember" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="teamId" value="@Model.Id" />
+                                                    <input type="hidden" name="memberId" value="@member.Id" />
+                                                    <button class="btn btn-sm btn-link text-danger text-decoration-none fw-bold">Remove</button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
                     </div>
-
-                    @if (User.Identity?.Name == Model.Leader?.UserName && member.Id != Model.LeaderId)
-                    {
-                        <form asp-action="RemoveMember" method="post" class="d-inline">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="teamId" value="@Model.Id" />
-                            <input type="hidden" name="memberId" value="@member.Id" />
-                            <button class="btn btn-sm btn-outline-danger">Remove</button>
-                        </form>
-                    }
-                </li>
-            }
-        </ul>
-
-        <form asp-action="Leave" method="post">
-            @Html.AntiForgeryToken()
-            <button class="btn btn-outline-secondary">
-                Leave Team
-            </button>
-        </form>
-
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card border-0 bg-primary text-white p-4 mb-4 shadow-sm" style="border-radius: 20px;">
+                <h6 class="fw-bold text-uppercase small opacity-75 mb-3">Leader Contact</h6>
+                <div class="d-flex align-items-center gap-3">
+                    <img src="https://ui-avatars.com/api/?name=@Model.Leader?.UserName&background=fff&color=0d6efd" 
+                         class="rounded-circle" width="50" />
+                    <div>
+                        <div class="fw-bold">@Model.Leader?.UserName</div>
+                        <div class="small opacity-75">Contact via @Model.Leader?.Email</div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+    .transition-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .transition-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.1) !important;
+    }
+    .bg-primary-soft { background-color: rgba(13, 110, 253, 0.1); }
+    .bg-warning-soft { background-color: rgba(255, 193, 7, 0.1); }
+    .text-slate-900 { color: #0f172a; }
+</style>

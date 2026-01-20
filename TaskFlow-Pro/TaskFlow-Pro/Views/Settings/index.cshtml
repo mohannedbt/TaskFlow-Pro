@@ -1,0 +1,111 @@
+﻿@model TaskFlow_Pro.Models.SettingsViewModel
+@{
+    ViewData["Title"] = "Settings";
+}
+
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-xl-7 col-lg-9">
+
+            <h3 class="fw-bold mb-4">Settings</h3>
+
+            <form method="post">
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                <!-- ===== ACCOUNT ===== -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">Account</h6>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Username</label>
+                            <input asp-for="Username" class="form-control rounded-3" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Email</label>
+                            <input asp-for="Email" class="form-control rounded-3" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== PREFERENCES ===== -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">Preferences</h6>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Theme</label>
+                                <select asp-for="Theme" class="form-select rounded-3">
+                                    <option>Light</option>
+                                    <option>Dark</option>
+                                    <option>System</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Default Calendar View</label>
+                                <select asp-for="CalendarView" class="form-select rounded-3">
+                                    <option>Month</option>
+                                    <option>Week</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-check form-switch mt-3">
+                            <input asp-for="CompactCalendar" class="form-check-input">
+                            <label class="form-check-label small">
+                                Enable compact calendar mode
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== NOTIFICATIONS ===== -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-3">Notifications</h6>
+
+                        <div class="form-check">
+                            <input asp-for="EmailNotifications" class="form-check-input">
+                            <label class="form-check-label small">Email notifications</label>
+                        </div>
+
+                        <div class="form-check">
+                            <input asp-for="TaskAssignedNotification" class="form-check-input">
+                            <label class="form-check-label small">Task assignment alerts</label>
+                        </div>
+
+                        <div class="form-check">
+                            <input asp-for="DueDateReminder" class="form-check-input">
+                            <label class="form-check-label small">Due date reminders</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== TEAM ===== -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h6 class="fw-bold mb-2">Team</h6>
+                        <p class="text-muted small mb-0">
+                            @Model.TeamName ?? "You are not part of a team"
+                        </p>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary rounded-3 fw-semibold px-4">
+                    Save Settings
+                </button>
+
+                @if (ViewBag.Success != null)
+                {
+                    <span class="text-success small ms-3">@ViewBag.Success</span>
+                }
+            </form>
+
+        </div>
+    </div>
+</div>
