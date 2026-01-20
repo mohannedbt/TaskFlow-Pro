@@ -6,14 +6,14 @@
 
 <div class="d-flex flex-wrap justify-content-between align-items-center mb-5 gap-3">
     <div>
-        <h3 class="fw-bold mb-1 text-slate-900" style="color: #0f172a;">Team Schedule</h3>
+        <h3 class="fw-bold mb-1" style="color: var(--text-main);">Team Schedule</h3>
         <p class="text-muted small mb-0">
             <i class="bi bi-info-circle me-1"></i> Visualize project timelines and team availability
         </p>
     </div>
 
     <div class="d-flex gap-2">
-        <button id="toggleCompact" class="btn btn-white border shadow-sm rounded-3 px-3">
+        <button id="toggleCompact" class="btn btn-outline-secondary rounded-3 px-3">
             <i class="bi bi-distribute-vertical me-2"></i>Compact
         </button>
         <a asp-controller="Task" asp-action="Create" class="btn btn-primary rounded-3 fw-bold px-4 shadow-sm">
@@ -22,7 +22,7 @@
     </div>
 </div>
 
-<div class="card border-0 shadow-lg p-2" style="border-radius: 24px;">
+<div class="card border-0 shadow-lg p-2" style="border-radius: 24px; background-color: var(--card-bg);">
     <div class="card-body p-4">
         <div id="calendar"></div>
     </div>
@@ -44,24 +44,15 @@ document.addEventListener('DOMContentLoaded', function () {
             right: 'dayGridMonth,dayGridWeek,listWeek'
         },
         buttonText: {
-            today: 'Today',
-            month: 'Month',
-            week: 'Week',
-            list: 'Agenda'
+            today: 'Today', month: 'Month', week: 'Week', list: 'Agenda'
         },
         events: '/Schedule/GetEvents',
         allDaySlot: true,
         displayEventTime: false,
-        dayMaxEvents: 4, // Prevents calendar from growing too tall
+        dayMaxEvents: 4,
         
         eventClick: function (info) {
             window.location.href = '/Task/Details/' + info.event.id;
-        },
-
-        eventDidMount: function (info) {
-            // Apply TaskFlow Pro styling to events based on status
-            const status = info.event.extendedProps.status; // Ensure your JSON returns this
-            info.el.classList.add('pro-event');
         }
     });
 
@@ -70,65 +61,46 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('toggleCompact').addEventListener('click', function() {
         compactMode = !compactMode;
         calendarEl.classList.toggle('compact-view', compactMode);
-        this.classList.toggle('active-toggle', compactMode);
     });
 });
 </script>
 
 <style>
-    /* ===== CALENDAR CORE STYLING ===== */
+    /* ===== DYNAMIC THEME OVERRIDES ===== */
     #calendar {
-        font-family: 'Inter', system-ui, -apple-system, sans-serif;
-        --fc-border-color: #f1f5f9;
-        --fc-today-bg-color: #f8fafc;
-        --fc-button-bg-color: #fff;
-        --fc-button-border-color: #e2e8f0;
-        --fc-button-text-color: #475569;
-        --fc-button-hover-bg-color: #f8fafc;
-        --fc-button-active-bg-color: #0d6efd;
-        --fc-button-active-border-color: #0d6efd;
+        font-family: 'Inter', system-ui, sans-serif;
+        /* Calendar borders now follow your theme's border color */
+        --fc-border-color: var(--sidebar-border);
+        --fc-today-bg-color: var(--nav-hover);
+        
+        /* Button colors follow theme variables */
+        --fc-button-bg-color: var(--bg-sidebar);
+        --fc-button-border-color: var(--sidebar-border);
+        --fc-button-text-color: var(--text-main);
+        --fc-button-hover-bg-color: var(--nav-hover);
+        --fc-button-hover-border-color: var(--sidebar-border);
+        --fc-button-active-bg-color: var(--accent-primary);
+        --fc-button-active-border-color: var(--accent-primary);
     }
 
-    /* Toolbar Title */
+    /* Fix Title color for Dark Mode */
     .fc .fc-toolbar-title {
         font-weight: 800;
         font-size: 1.4rem;
-        color: #0f172a;
+        color: var(--text-main);
         letter-spacing: -0.02em;
     }
 
-    /* Professional Buttons */
-    .fc .fc-button {
-        padding: 8px 16px;
-        font-weight: 600;
-        font-size: 0.85rem;
-        border-radius: 10px !important;
-        transition: all 0.2s ease;
-        text-transform: capitalize;
-    }
-
-    .fc .fc-button-primary:not(:disabled).fc-button-active, 
-    .fc .fc-button-primary:not(:disabled):active {
-        background-color: #0d6efd !important;
-        color: #fff !important;
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
-    }
-
-    /* ===== DAY GRID REFINEMENT ===== */
-    .fc .fc-daygrid-day-top {
-        flex-direction: row;
-        padding: 8px;
-    }
-
+    /* Day Numbers */
     .fc .fc-daygrid-day-number {
         font-weight: 700;
-        color: #94a3b8;
-        font-size: 0.9rem;
+        color: var(--text-muted);
     }
 
+    /* Active/Today state */
     .fc .fc-day-today .fc-daygrid-day-number {
-        color: #0d6efd;
-        background: #eff6ff;
+        color: #fff;
+        background: var(--accent-primary);
         width: 28px;
         height: 28px;
         display: flex;
@@ -137,48 +109,24 @@ document.addEventListener('DOMContentLoaded', function () {
         border-radius: 8px;
     }
 
-    /* ===== TASKFLOW EVENT STYLING ===== */
-    .fc-v-event, .fc-h-event {
+    /* Event Styling Overrides for Dark Mode Readability */
+    .fc-event {
         border: none !important;
-        margin-bottom: 2px !important;
-    }
-
-    .pro-event {
-        border-radius: 8px !important;
-        padding: 4px 10px !important;
-        font-size: 0.75rem !important;
+        padding: 4px 8px !important;
+        border-radius: 6px !important;
         font-weight: 600 !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        transition: transform 0.15s ease;
     }
 
-    .pro-event:hover {
-        transform: translateY(-1px);
-        filter: brightness(0.95);
+    /* Transparent backgrounds so they don't look muddy in dark mode */
+    [data-theme="Dark"] .fc-event-ongoing { background: rgba(67, 56, 202, 0.25) !important; color: #818cf8 !important; border-left: 3px solid #818cf8 !important; }
+    [data-theme="Dark"] .fc-event-completed { background: rgba(21, 128, 61, 0.25) !important; color: #4ade80 !important; border-left: 3px solid #4ade80 !important; }
+
+    /* Fix Agenda/List view text for dark mode */
+    .fc-list-event-title, .fc-list-day-text, .fc-list-day-side-text {
+        color: var(--text-main) !important;
     }
-
-    /* Status Backgrounds (Mapped to your colors) */
-    .fc-event-ongoing { background: #eef2ff !important; color: #4338ca !important; border-left: 3px solid #4338ca !important; }
-    .fc-event-completed { background: #f0fdf4 !important; color: #15803d !important; border-left: 3px solid #15803d !important; }
-    .fc-event-interrupted { background: #fffbeb !important; color: #b45309 !important; border-left: 3px solid #b45309 !important; }
-    .fc-event-canceled { background: #fef2f2 !important; color: #b91c1c !important; border-left: 3px solid #b91c1c !important; }
-
-    /* ===== COMPACT VIEW MODIFIER ===== */
-    .compact-view .fc-daygrid-day {
-        min-height: 80px !important;
+    .fc-list-empty {
+        background: var(--bg-body) !important;
+        color: var(--text-muted) !important;
     }
-
-    .compact-view .fc-toolbar-title {
-        font-size: 1.1rem;
-    }
-
-    .active-toggle {
-        background-color: #f1f5f9 !important;
-        border-color: #cbd5e1 !important;
-        color: #0f172a !important;
-    }
-
-    /* Custom scrollbar for agenda/list views */
-    .fc-scroller::-webkit-scrollbar { width: 6px; }
-    .fc-scroller::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
 </style>

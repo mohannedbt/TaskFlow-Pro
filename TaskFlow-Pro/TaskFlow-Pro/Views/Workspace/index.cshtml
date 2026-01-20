@@ -1,123 +1,162 @@
 ﻿@model TaskFlow_Pro.Models.WorkspaceIndexViewModel
 @{
-    ViewData["Title"] = "Workspace Settings";
-    var isOwner = User.IsInRole("Owner");
-    var isAdmin = User.IsInRole("Admin");
-    var canManage = isOwner || isAdmin;
-    var ownerDisabled = isOwner ? null : "disabled";
+ViewData["Title"] = "Workspace Settings";
+var isOwner = User.IsInRole("Owner");
+var isAdmin = User.IsInRole("Admin");
+var canManage = isOwner || isAdmin;
+var ownerDisabled = isOwner ? null : "disabled";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-5">
-    <div>
-        <h3 class="fw-bold text-slate-900 mb-1">Workspace Hub</h3>
-        <p class="text-muted small mb-0 d-flex align-items-center">
-            <i class="bi bi-shield-lock me-2"></i> Control your organization’s teams and security policies
-        </p>
-    </div>
-    @if (isOwner)
-    {
-        <span class="badge bg-primary-soft text-primary px-3 py-2 rounded-pill fw-bold">
-            <i class="bi bi-star-fill me-1"></i> Workspace Owner
-        </span>
-    }
-</div>
+<style>
+    /* Global Section Overrides */
+    .workspace-container { color: var(--text-main); }
 
-@if (TempData["Success"] != null || TempData["Error"] != null)
-{
-    <div class="alert @(TempData["Success"] != null ? "alert-success" : "alert-danger") border-0 shadow-sm rounded-4 mb-4 animate__animated animate__fadeIn">
+    .stat-card {
+        background: var(--card-bg);
+        border: 1px solid var(--sidebar-border);
+    }
+
+    .bg-primary-soft { background: rgba(13, 110, 253, 0.15); }
+    .bg-success-soft { background: rgba(25, 135, 84, 0.15); }
+    .bg-warning-soft { background: rgba(255, 193, 7, 0.15); }
+
+    /* Table & Accordion Theme Fixes */
+    .table { color: var(--text-main); }
+    .table-hover tbody tr:hover { background-color: var(--nav-hover); color: var(--text-main); }
+
+    .custom-accordion .accordion-item {
+        background: var(--bg-body);
+        border: 1px solid var(--sidebar-border) !important;
+    }
+
+    .custom-accordion .accordion-button {
+        background: var(--card-bg);
+        color: var(--text-main);
+    }
+
+    .custom-accordion .accordion-button:not(.collapsed) {
+        background: var(--card-bg);
+        color: var(--accent-primary);
+        box-shadow: inset 0 -1px 0 var(--sidebar-border);
+    }
+
+    .custom-accordion .accordion-body {
+        background: var(--nav-hover);
+    }
+
+    /* Specialized Dark Card for Recruitment */
+    .recruitment-card {
+        background: linear-gradient(145deg, #1e293b, #0f172a);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+</style>
+
+<div class="workspace-container">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h3 class="fw-bold mb-1" style="color: var(--text-main)">Workspace Hub</h3>
+            <p class="text-muted small mb-0 d-flex align-items-center">
+                <i class="bi bi-shield-lock me-2 text-primary"></i> Control organization teams and security
+            </p>
+        </div>
+        @if (isOwner)
+        {
+        <span class="badge bg-primary-soft text-primary px-3 py-2 rounded-pill fw-bold">
+                <i class="bi bi-star-fill me-1"></i> Workspace Owner
+            </span>
+        }
+    </div>
+
+    @if (TempData["Success"] != null || TempData["Error"] != null)
+    {
+    <div class="alert @(TempData["Success"] != null ? "alert-success" : "alert-danger") border-0 shadow-sm rounded-4 mb-4">
         <i class="bi @(TempData["Success"] != null ? "bi-check-circle" : "bi-exclamation-triangle") me-2"></i>
         @(TempData["Success"] ?? TempData["Error"])
     </div>
-}
+    }
 
-<div class="row g-4 mb-5">
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
-            <div class="d-flex align-items-center gap-3">
-                <div class="bg-primary-soft text-primary rounded-3 p-3">
-                    <i class="bi bi-people fs-4"></i>
-                </div>
-                <div>
-                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.05em;">Capacity</div>
-                    <div class="fw-bold fs-4 text-slate-900">@Model.MemberCount <span class="text-muted fw-normal fs-6">/ @Model.MaxMembers</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
-            <div class="d-flex align-items-center gap-3">
-                <div class="bg-success-soft text-success rounded-3 p-3">
-                    <i class="bi bi-grid-1x2 fs-4"></i>
-                </div>
-                <div>
-                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.05em;">Structure</div>
-                    <div class="fw-bold fs-4 text-slate-900">@Model.Teams.Count <span class="text-muted fw-normal fs-6">Teams</span></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
-            <div class="d-flex align-items-center gap-3">
-                <div class="bg-warning-soft text-warning-emphasis rounded-3 p-3">
-                    <i class="bi bi-globe fs-4"></i>
-                </div>
-                <div>
-                    <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem; letter-spacing: 0.05em;">Domain Policy</div>
-                    <div class="fw-bold fs-5 text-slate-900">@@@Model.EmailDomain</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row g-4">
-    <div class="col-lg-5">
-        <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
-            <div class="card-header bg-white border-0 pt-4 px-4">
-                <h5 class="fw-bold m-0">General Settings</h5>
-            </div>
-            <div class="card-body px-4 pb-4">
-                <form asp-action="UpdateWorkspace" method="post">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="WorkspaceId" />
-
-                    <div class="mb-3">
-                        <label class="form-label-tiny mb-1">Organization Name</label>
-                        <input asp-for="WorkspaceName" class="form-control border-0 bg-light py-2 rounded-3" disabled="@ownerDisabled" />
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="card stat-card rounded-4 p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary-soft text-primary rounded-3 p-3">
+                        <i class="bi bi-people fs-4"></i>
                     </div>
-
-                    <div class="row mb-3">
-                        <div class="col-6">
-                            <label class="form-label-tiny mb-1">Member Limit</label>
-                            <input asp-for="MaxMembers" type="number" class="form-control border-0 bg-light rounded-3" disabled="@ownerDisabled" />
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label-tiny mb-1">Domain Lock</label>
-                            <input asp-for="EmailDomain" class="form-control border-0 bg-light rounded-3" disabled="@ownerDisabled" />
-                        </div>
+                    <div>
+                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Capacity</div>
+                        <div class="fw-bold fs-4">@Model.MemberCount <span class="text-muted fw-normal fs-6">/ @Model.MaxMembers</span></div>
                     </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card rounded-4 p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-success-soft text-success rounded-3 p-3">
+                        <i class="bi bi-grid-1x2 fs-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Structure</div>
+                        <div class="fw-bold fs-4">@Model.Teams.Count <span class="text-muted fw-normal fs-6">Teams</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stat-card rounded-4 p-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-warning-soft text-warning rounded-3 p-3">
+                        <i class="bi bi-globe fs-4"></i>
+                    </div>
+                    <div>
+                        <div class="text-muted small fw-bold text-uppercase" style="font-size: 0.65rem;">Domain Policy</div>
+                        <div class="fw-bold fs-5">@@@Model.EmailDomain</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    @if (isOwner)
-                    {
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden" style="background: var(--card-bg); border: 1px solid var(--sidebar-border) !important;">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h5 class="fw-bold m-0">General Settings</h5>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <form asp-action="UpdateWorkspace" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="WorkspaceId" />
+
+                        <div class="mb-3">
+                            <label class="form-label-tiny mb-1">Organization Name</label>
+                            <input asp-for="WorkspaceName" class="form-control theme-input rounded-3" disabled="@ownerDisabled" />
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <label class="form-label-tiny mb-1">Member Limit</label>
+                                <input asp-for="MaxMembers" type="number" class="form-control theme-input rounded-3" disabled="@ownerDisabled" />
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label-tiny mb-1">Domain Lock</label>
+                                <input asp-for="EmailDomain" class="form-control theme-input rounded-3" disabled="@ownerDisabled" />
+                            </div>
+                        </div>
+
+                        @if (isOwner)
+                        {
                         <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3 mt-2 shadow-sm">
                             Update Workspace
                         </button>
-                    }
-                    else
-                    {
-                        <div class="alert alert-light border-0 small text-center rounded-3 mb-0">
-                            <i class="bi bi-lock me-1"></i> Contact Owner to change settings
-                        </div>
-                    }
-                </form>
+                        }
+                    </form>
+                </div>
             </div>
-        </div>
 
-        @if (canManage)
-        {
-            <div class="card border-0 shadow-sm rounded-4 bg-dark text-white p-2">
+            @if (canManage)
+            {
+            <div class="card recruitment-card border-0 shadow-lg rounded-4 p-2 text-white">
                 <div class="card-body p-4">
                     <h5 class="fw-bold mb-1">Recruitment</h5>
                     <p class="small opacity-75 mb-4">Generate secure invite links for new hires.</p>
@@ -126,157 +165,109 @@
                         @Html.AntiForgeryToken()
                         <div class="mb-3">
                             <label class="form-label-tiny text-white opacity-50 mb-1">Grant Role</label>
-                            <select name="roleToGrant" class="form-select border-0 bg-secondary-soft text-white rounded-3 py-2">
-                                <option value="Member">Member</option>
-                                <option value="Admin">Admin</option>
+                            <select name="roleToGrant" class="form-select border-0 bg-white bg-opacity-10 text-white rounded-3">
+                                <option value="Member" class="text-dark">Member</option>
+                                <option value="Admin" class="text-dark">Admin</option>
                             </select>
                         </div>
                         <div class="mb-4">
                             <label class="form-label-tiny text-white opacity-50 mb-1">Email (Restricted)</label>
-                            <input name="email" class="form-control border-0 bg-secondary-soft text-white rounded-3 py-2" placeholder="optional@domain.com" />
+                            <input name="email" class="form-control border-0 bg-white bg-opacity-10 text-white rounded-3" placeholder="optional@domain.com" />
                         </div>
-                        <button class="btn btn-primary w-100 fw-bold py-2 rounded-3 border-0">
+                        <button class="btn btn-primary w-100 fw-bold py-2 rounded-3">
                             Generate Link
                         </button>
                     </form>
-
-                    @if (TempData["InviteLink"] != null)
-                    {
-                        <div class="mt-4 p-3 bg-white bg-opacity-10 rounded-3 border border-white border-opacity-10">
-                            <div class="x-small text-uppercase opacity-50 mb-2 fw-bold">Invite Generated</div>
-                            <div class="d-flex align-items-center gap-2">
-                                <code class="text-primary-soft flex-fill overflow-hidden text-nowrap">@TempData["InviteLink"]</code>
-                                <button class="btn btn-sm btn-light" onclick="navigator.clipboard.writeText('@TempData["InviteLink"]')">
-                                    <i class="bi bi-copy"></i>
-                                </button>
-                            </div>
-                        </div>
-                    }
                 </div>
             </div>
-        }
-    </div>
+            }
+        </div>
 
-    <div class="col-lg-7">
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold m-0">Teams Hierarchy</h5>
-                @if (canManage)
-                { 
-                    <a asp-controller="Team" asp-action="Create">
-                        <button class="btn btn-outline-primary btn-sm rounded-pill fw-bold" data-bs-toggle="modal" data-bs-target="#createTeamModal">
-                            <i class="bi bi-plus-lg me-1"></i> New
-                        </button>
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 mb-4" style="background: var(--card-bg); border: 1px solid var(--sidebar-border) !important;">
+                <div class="card-header bg-transparent border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold m-0">Teams Hierarchy</h5>
+                    @if (canManage) {
+                    <a asp-controller="Team" asp-action="Create" class="btn btn-outline-primary btn-sm rounded-pill fw-bold">
+                        <i class="bi bi-plus-lg me-1"></i> New Team
                     </a>
-
-                }
-            </div>
-            <div class="card-body p-4">
-                <div class="accordion custom-accordion" id="teamsAccordion">
-                    @foreach (var t in Model.Teams)
-                    {
-                        <div class="accordion-item border-0 mb-3 shadow-sm rounded-4 overflow-hidden">
+                    }
+                </div>
+                <div class="card-body p-4">
+                    <div class="accordion custom-accordion" id="teamsAccordion">
+                        @foreach (var t in Model.Teams)
+                        {
+                        <div class="accordion-item rounded-4 mb-3 overflow-hidden">
                             <h2 class="accordion-header">
-                                <button class="accordion-button collapsed bg-white py-3 px-4" type="button" data-bs-toggle="collapse" data-bs-target="#team_@t.TeamId">
+                                <button class="accordion-button collapsed py-3 px-4" type="button" data-bs-toggle="collapse" data-bs-target="#team_@t.TeamId">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="bg-light rounded-circle p-2"><i class="bi bi-microsoft-teams text-primary"></i></div>
-                                        <div>
-                                            <div class="fw-bold text-slate-900">@t.Name</div>
-                                            <div class="text-muted x-small">@((t.Members?.Count ?? 0)) Active Contributors</div>
+                                        <div class="bg-primary-soft rounded-circle p-2"><i class="bi bi-microsoft-teams text-primary"></i></div>
+                                        <div class="text-start">
+                                            <div class="fw-bold">@t.Name</div>
+                                            <div class="text-muted x-small">@((t.Members?.Count ?? 0)) Contributors</div>
                                         </div>
                                     </div>
                                 </button>
                             </h2>
                             <div id="team_@t.TeamId" class="accordion-collapse collapse" data-bs-parent="#teamsAccordion">
-                                <div class="accordion-body bg-light-soft px-4">
-                                    <p class="text-muted small mb-4">@t.Description</p>
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-borderless align-middle mb-0">
-                                            <thead>
-                                                <tr class="x-small text-muted text-uppercase fw-bold">
-                                                    <th>User</th>
-                                                    <th>Role</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach (var m in t.Members) {
-                                                    <tr>
-                                                        <td class="small fw-semibold py-2">@m.Username</td>
-                                                        <td><span class="badge @(m.Role == "Admin" ? "bg-warning-soft text-warning-emphasis" : "bg-light text-muted") rounded-pill">@m.Role</span></td>
-                                                    </tr>
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                <div class="accordion-body px-4">
+                                    <p class="text-muted small mb-3">@t.Description</p>
+                                    <table class="table table-sm table-borderless align-middle mb-0">
+                                        <tbody>
+                                        @foreach (var m in t.Members) {
+                                        <tr>
+                                            <td class="small fw-semibold py-2">@m.Username</td>
+                                            <td class="text-end"><span class="badge bg-primary-soft text-primary rounded-pill x-small">@m.Role</span></td>
+                                        </tr>
+                                        }
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
-                    }
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-header bg-white border-0 pt-4 px-4">
-                <h5 class="fw-bold m-0">All Workspace Members</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light border-0">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden" style="background: var(--card-bg); border: 1px solid var(--sidebar-border) !important;">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h5 class="fw-bold m-0">Global Directory</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead style="background: var(--nav-hover)">
                             <tr class="x-small text-muted text-uppercase fw-bold">
-                                <th class="ps-4 py-3">User</th>
-                                <th>Access Level</th>
-                                <th class="pe-4">Current Team</th>
+                                <th class="ps-4 py-3 border-0">User</th>
+                                <th class="border-0">Access</th>
+                                <th class="pe-4 border-0">Team</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                            </thead>
+                            <tbody>
                             @foreach (var m in Model.Members)
                             {
-                                <tr>
-                                    <td class="ps-4">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <img src="https://ui-avatars.com/api/?name=@m.Username&background=random" class="rounded-circle" width="32" />
-                                            <div>
-                                                <div class="fw-bold small text-slate-900">@m.Username</div>
-                                                <div class="text-muted x-small">@m.Email</div>
-                                            </div>
+                            <tr style="border-bottom: 1px solid var(--sidebar-border)">
+                                <td class="ps-4 py-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img src="https://ui-avatars.com/api/?name=@m.Username&background=random" class="rounded-circle" width="32" />
+                                        <div>
+                                            <div class="fw-bold small">@m.Username</div>
+                                            <div class="text-muted x-small">@m.Email</div>
                                         </div>
-                                    </td>
-                                    <td>
-                                        @{
-                                            var roleClass = m.Role switch {
-                                                "Owner" => "bg-primary text-white",
-                                                "Admin" => "bg-info-soft text-info",
-                                                _ => "bg-light text-muted"
-                                            };
-                                        }
-                                        <span class="badge @roleClass rounded-pill fw-bold x-small px-3">@m.Role</span>
-                                    </td>
-                                    <td class="pe-4 text-muted small fw-medium">
-                                        <i class="bi bi-hash me-1"></i>@(m.TeamName ?? "Floating")
-                                    </td>
-                                </tr>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge @(m.Role == "Owner" ? "bg-primary" : "bg-primary-soft text-primary") rounded-pill x-small px-3">@m.Role</span>
+                                </td>
+                                <td class="pe-4 text-muted small fw-medium">@m.TeamName</td>
+                            </tr>
                             }
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-    .bg-primary-soft { background: rgba(13, 110, 253, 0.1); }
-    .bg-success-soft { background: rgba(25, 135, 84, 0.1); }
-    .bg-warning-soft { background: rgba(255, 193, 7, 0.15); }
-    .bg-info-soft { background: rgba(13, 202, 240, 0.15); }
-    .bg-secondary-soft { background: rgba(255, 255, 255, 0.1); }
-    .bg-light-soft { background: #fbfcfd; }
-    .text-slate-900 { color: #0f172a; }
-    .form-label-tiny { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
-    .x-small { font-size: 0.72rem; }
-    .custom-accordion .accordion-button:not(.collapsed) { background: #fff; box-shadow: none; color: inherit; }
-    .custom-accordion .accordion-button::after { background-size: 0.8rem; }
-    .accordion-button:focus { box-shadow: none; }
-</style>

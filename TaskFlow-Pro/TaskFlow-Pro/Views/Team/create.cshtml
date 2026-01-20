@@ -1,70 +1,124 @@
 ﻿@model TaskFlow_Pro.Models.CreateTeamViewModel
 @{
-    ViewData["Title"] = "Create Team";
-    var isOwner = User.IsInRole("Owner");
-    var isAdmin = User.IsInRole("Admin");
-    var canManage = isOwner || isAdmin;
+ViewData["Title"] = "Create Team";
+var isOwner = User.IsInRole("Owner");
+var isAdmin = User.IsInRole("Admin");
+var canManage = isOwner || isAdmin;
 }
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h3 class="fw-bold text-slate-900 mb-1">Create a Team</h3>
-        <p class="text-muted small mb-0">Add a new team to your workspace.</p>
-    </div>
-    <a asp-controller="Workspace" asp-action="Index" class="btn btn-outline-secondary rounded-pill fw-bold">
-        <i class="bi bi-arrow-left me-1"></i> Back
-    </a>
-</div>
-
-@if (!canManage)
-{
-    <div class="alert alert-danger border-0 rounded-4">
-        You don't have permission to create teams.
-    </div>
-    return;
-}
-
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4">
-        <i class="bi bi-exclamation-triangle me-2"></i>
-        @TempData["Error"]
-    </div>
-}
-
-<div class="card border-0 shadow-sm rounded-4">
-    <div class="card-body p-4 p-md-5">
-        <form asp-action="Create" method="post">
-            @Html.AntiForgeryToken()
-
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 small rounded-3 mb-4"></div>
-
-            <div class="mb-3">
-                <label asp-for="Name" class="form-label-tiny mb-1">Team Name</label>
-                <input asp-for="Name" class="form-control border-0 bg-light py-2 rounded-3" placeholder="e.g. Backend Squad" />
-                <span asp-validation-for="Name" class="text-danger x-small mt-1 d-block"></span>
-            </div>
-
-            <div class="mb-4">
-                <label asp-for="Description" class="form-label-tiny mb-1">Description (optional)</label>
-                <textarea asp-for="Description" class="form-control border-0 bg-light rounded-3" rows="4"
-                          placeholder="What does this team own? (projects, responsibilities...)"></textarea>
-                <span asp-validation-for="Description" class="text-danger x-small mt-1 d-block"></span>
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100 fw-bold py-2 rounded-3 shadow-sm">
-                <i class="bi bi-plus-lg me-1"></i> Create Team
-            </button>
-        </form>
-    </div>
-</div>
 
 <style>
-    .text-slate-900 { color: #0f172a; }
-    .form-label-tiny { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; }
+    /* Consistent Styling System */
+    .create-team-container {
+        color: var(--text-main);
+    }
+
+    .form-card {
+        background: var(--card-bg);
+        border: 1px solid var(--sidebar-border);
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-label-caps {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+    }
+
+    .theme-input {
+        background-color: var(--nav-hover) !important;
+        color: var(--text-main) !important;
+        border: 1px solid transparent !important;
+        transition: all 0.2s ease;
+        padding: 0.75rem 1rem;
+    }
+
+    .theme-input:focus {
+        background-color: var(--card-bg) !important;
+        border-color: var(--accent-primary) !important;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1) !important;
+    }
+
     .x-small { font-size: 0.72rem; }
+
+    [data-theme="Dark"] .theme-input::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+    }
 </style>
 
+<div class="container py-4 create-team-container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h3 class="fw-bold mb-1" style="color: var(--text-main); letter-spacing: -0.02em;">Create Team</h3>
+                    <p class="text-muted small mb-0">Define a new operational unit for your workspace.</p>
+                </div>
+                <a asp-controller="Workspace" asp-action="Index" class="btn btn-outline-secondary rounded-pill fw-bold px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                </a>
+            </div>
+
+            @if (!canManage)
+            {
+            <div class="alert alert-danger border-0 rounded-4 shadow-sm py-3 px-4">
+                <i class="bi bi-shield-lock me-2"></i>
+                You do not have the required administrative permissions to create teams.
+            </div>
+            return;
+            }
+
+            @if (TempData["Error"] != null)
+            {
+            <div class="alert alert-danger border-0 shadow-sm rounded-4 mb-4 animate__animated animate__shakeX">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                @TempData["Error"]
+            </div>
+            }
+
+            <div class="card form-card">
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 small rounded-3 mb-4"></div>
+
+                        <div class="mb-4">
+                            <label asp-for="Name" class="form-label-caps mb-2">Team Identity</label>
+                            <input asp-for="Name" class="form-control theme-input rounded-3"
+                                   placeholder="e.g. Design Systems or Engineering Alpha" />
+                            <span asp-validation-for="Name" class="text-danger x-small mt-1 d-block fw-medium"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Description" class="form-label-caps mb-2">Scope & Mission</label>
+                            <textarea asp-for="Description" class="form-control theme-input rounded-3" rows="5"
+                                      placeholder="Briefly describe what this team manages (e.g., Infrastructure, UI Components, Customer Growth)..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger x-small mt-1 d-block fw-medium"></span>
+                        </div>
+
+                        <div class="d-grid mt-5">
+                            <button type="submit" class="btn btn-primary fw-bold py-3 rounded-3 shadow-sm transition-hover">
+                                <i class="bi bi-plus-lg me-2"></i> Confirm and Create Team
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-4 opacity-75">
+                <p class="text-muted small">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Teams are visible to all workspace admins upon creation.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+<partial name="_ValidationScriptsPartial" />
 }

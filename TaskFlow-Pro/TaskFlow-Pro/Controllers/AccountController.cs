@@ -124,7 +124,7 @@ namespace TaskFlow_Pro.Controllers
             await _db.SaveChangesAsync();
 
             await _signInManager.SignInAsync(user, isPersistent: false);
-            return RedirectToAction("Mytasks", "Task");
+            return RedirectToAction("Mytodo", "Task");
         }
 
         // -------------------------
@@ -191,7 +191,7 @@ namespace TaskFlow_Pro.Controllers
                 if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
                     return Redirect(returnUrl);
 
-                return RedirectToAction("MyTasks", "Task");
+                return RedirectToAction("Mytodo", "Task");
             }
 
             if (result.IsLockedOut)
@@ -211,6 +211,11 @@ namespace TaskFlow_Pro.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction(nameof(Login));
+        }
+
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
     

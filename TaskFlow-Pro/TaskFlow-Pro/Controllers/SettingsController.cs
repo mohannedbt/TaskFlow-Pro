@@ -4,80 +4,86 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskFlow_Pro.Models;
 
-namespace TaskFlow_Pro.Controllers;
-
-[Authorize]
-public class SettingsController : Controller
+namespace TaskFlow_Pro.Controllers
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly ApplicationDbContext _context;
-
-    public SettingsController(
-        UserManager<ApplicationUser> userManager,
-        ApplicationDbContext context)
+    [Authorize]
+    public class SettingsController : Controller
     {
-        _userManager = userManager;
-        _context = context;
-    }
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationDbContext _db;
 
-    // =========================
-    // VIEW SETTINGS
-    // =========================
-    [HttpGet]
-    public async Task<IActionResult> Index()
-    {
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return NotFound();
-
-        var team = user.TeamId != null
-            ? await _context.Teams.FindAsync(user.TeamId)
-            : null;
-
-        var model = new SettingsViewModel
+        public SettingsController(UserManager<ApplicationUser> userManager, ApplicationDbContext db)
         {
-            Username = user.UserName!,
-            Email = user.Email!,
-            TeamName = team?.Name,
-
-            // Defaults for now (can be stored later)
-            Theme = "Light",
-            CalendarView = "Month",
-            CompactCalendar = false,
-            EmailNotifications = true,
-            TaskAssignedNotification = true,
-            DueDateReminder = true
-        };
-
-        return View(model);
-    }
-
-    // =========================
-    // SAVE SETTINGS
-    // =========================
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Index(SettingsViewModel model)
-    {
-        if (!ModelState.IsValid)
-            return View(model);
-
-        var user = await _userManager.GetUserAsync(User);
-        if (user == null) return NotFound();
-
-        user.UserName = model.Username;
-        user.Email = model.Email;
-
-        var result = await _userManager.UpdateAsync(user);
-
-        if (!result.Succeeded)
-        {
-            foreach (var error in result.Errors)
-                ModelState.AddModelError(string.Empty, error.Description);
-
-            return View(model);
+            _userManager = userManager;
+            _db = db;
         }
 
-        ViewBag.Success = "Settings saved successfully.";
-        return View(model);
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var me = await _db.Users
+                .Include(u => u.Team)
+                .FirstOrDefaultAsync(u => u.Id == _userManager.GetUserId(User));
+
+            if (me == null) return Unauthorized();
+
+            var vm = new SettingsViewModel
+            {
+                Username = me.UserName ?? "",
+                Email = me.Email ?? "",
+
+                Theme = me.Theme,
+                DefaultCalendarView = me.DefaultCalendarView,
+                CompactCalendarMode = me.CompactCalendarMode,
+
+                EmailNotifications = me.EmailNotifications,
+                TaskAssignmentAlerts = me.TaskAssignmentAlerts,
+                DueDateReminders = me.DueDateReminders,
+
+                TeamName = me.Team?.Name
+            };
+
+            return View(vm);
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Update(SettingsViewModel vm)
+        {
+            var me = await _db.Users
+                .FirstOrDefaultAsync(u => u.Id == _userManager.GetUserId(User));
+
+            if (me == null) return Unauthorized();
+
+            // Save in DB (good to keep)
+            me.UserName = vm.Username?.Trim();
+
+            me.Theme = vm.Theme;
+            me.DefaultCalendarView = vm.DefaultCalendarView;
+            me.CompactCalendarMode = vm.CompactCalendarMode;
+
+            me.EmailNotifications = vm.EmailNotifications;
+            me.TaskAssignmentAlerts = vm.TaskAssignmentAlerts;
+            me.DueDateReminders = vm.DueDateReminders;
+
+            await _db.SaveChangesAsync();
+
+            // ✅ Save to cookies so UI can use them without DB queries
+            var opt = new CookieOptions
+            {
+                Expires = DateTimeOffset.UtcNow.AddYears(1),
+                HttpOnly = false, // must be readable by JS for calendar view
+                IsEssential = true,
+                SameSite = SameSiteMode.Lax,
+                Secure = true // set false only if you're not using https locally
+            };
+
+            Response.Cookies.Append("tf_theme", me.Theme ?? "Light", opt);
+            Response.Cookies.Append("tf_calview", me.DefaultCalendarView ?? "Month", opt);
+            Response.Cookies.Append("tf_compact", me.CompactCalendarMode ? "1" : "0", opt);
+
+            TempData["Success"] = "Settings updated successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

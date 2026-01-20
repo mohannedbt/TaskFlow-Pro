@@ -1,169 +1,213 @@
-﻿<!DOCTYPE html>
+﻿@{
+var theme = Context.Request.Cookies["tf_theme"] ?? "Light";
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - TaskFlow Pro</title>
 
-    <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-
-    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
 
     <style>
+        :root {
+            /* Light Theme Variables */
+            --bg-body: #f8fafc;
+            --bg-sidebar: #ffffff;
+            --sidebar-border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --nav-hover: #f1f5f9;
+            --card-bg: #ffffff;
+            --accent-primary: #0d6efd;
+        }
+
+        /* High-End Dark Theme Overrides */
+        [data-theme="Dark"] {
+            --bg-body: #0b1120;       /* Deep Midnight Blue */
+            --bg-sidebar: #0f172a;    /* Slightly lighter than body */
+            --sidebar-border: #1e293b;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --nav-hover: rgba(30, 41, 59, 0.7);
+            --card-bg: #111827;       /* Soft Charcoal */
+            --accent-primary: #38bdf8; /* Brighter blue for dark mode */
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f4f7f9;
-            color: #2d3436;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* ===== SIDEBAR ===== */
         .sidebar {
-            background: #ffffff;
-            border-right: 1px solid #e9ecef;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--sidebar-border);
             min-height: 100vh;
             position: fixed;
             width: 260px;
-            padding-top: 1.5rem;
+            padding-top: 2rem;
+            z-index: 1000;
         }
 
         .brand-area {
-            padding: 0 1.5rem 2rem;
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: #0d6efd;
+            padding: 0 1.5rem 2.5rem;
+            font-weight: 800;
+            font-size: 1.35rem;
+            color: var(--accent-primary);
             display: flex;
             align-items: center;
+            letter-spacing: -0.02em;
         }
 
         .brand-icon {
-            width: 32px;
-            height: 32px;
-            background: #0d6efd;
-            border-radius: 8px;
-            margin-right: 10px;
+            width: 34px;
+            height: 34px;
+            background: var(--accent-primary);
+            border-radius: 10px;
+            margin-right: 12px;
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
         }
 
         .nav-link {
-            color: #636e72;
+            color: var(--text-muted);
             font-weight: 500;
-            padding: 0.8rem 1.5rem;
-            border-radius: 10px;
-            margin: 0.2rem 1rem;
-            transition: all 0.2s;
+            padding: 0.75rem 1.25rem;
+            border-radius: 12px;
+            margin: 0.25rem 1rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .nav-link.active,
-        .nav-link:hover {
-            background-color: #f0f3ff;
-            color: #0d6efd;
+        .nav-link.active {
+            background-color: var(--accent-primary) !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link:hover:not(.active) {
+            background-color: var(--nav-hover);
+            color: var(--accent-primary);
+            transform: translateX(4px);
         }
 
         .nav-link i {
-            margin-right: 10px;
-            font-size: 1.1rem;
+            margin-right: 12px;
+            font-size: 1.2rem;
+            vertical-align: middle;
+        }
+
+        /* ===== DARK MODE COMPONENT FIXES ===== */
+        [data-theme="Dark"] .card {
+            background: var(--card-bg);
+            border: 1px solid var(--sidebar-border);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        [data-theme="Dark"] .form-control,
+        [data-theme="Dark"] .form-select {
+            background-color: #1e293b;
+            border-color: #334155;
+            color: #f1f5f9;
+        }
+
+        [data-theme="Dark"] .form-control:focus {
+            background-color: #1e293b;
+            border-color: var(--accent-primary);
         }
 
         /* ===== MAIN CONTENT ===== */
         .main-content {
             margin-left: 260px;
-            padding: 2rem;
+            padding: 2.5rem;
+            min-height: 100vh;
         }
 
-        /* ===== TOP BAR ===== */
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        /* ===== MOBILE ===== */
         @@media (max-width: 992px) {
-            .sidebar {
-                display: none;
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; padding: 1.5rem; }
         }
     </style>
 </head>
 
-<body>
+<body data-theme="@theme" class="tf-body">
 
 @if (User.Identity?.IsAuthenticated == true)
 {
-    <!-- ===== SIDEBAR ===== -->
-    <aside class="sidebar d-none d-lg-block">
-        <div class="brand-area">
-            <span class="brand-icon"></span>
-            TaskFlow Pro
-        </div>
+<aside class="sidebar">
+    <div class="brand-area">
+        <div class="brand-icon"></div>
+        TaskFlow<span style="font-weight: 400; opacity: 0.8">Pro</span>
+    </div>
 
-        <nav class="nav flex-column">
+    <nav class="nav flex-column">
+        <a class="nav-link @(IsActive("Task"))" asp-controller="Task" asp-action="MyToDo">
+            <i class="bi bi-grid-1x2"></i> My Workspace
+        </a>
 
-            <!-- Task Manager -->
-            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Task" ? "active" : "")"
-               asp-controller="Task" asp-action="MyTasks">
-                <i class="bi bi-check2-square"></i> TaskManager
-            </a>
+        <a class="nav-link @(IsActive("Schedule"))" asp-controller="Schedule" asp-action="Index">
+            <i class="bi bi-calendar3"></i> Schedule
+        </a>
 
-            <!-- Calendar -->
-            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Calendar" ? "active" : "")"
-               asp-controller="Schedule" asp-action="Index">
-                <i class="bi bi-calendar-week"></i> Calendar
-            </a>
+        <a class="nav-link @(IsActive("Team"))" asp-controller="Team" asp-action="Index">
+            <i class="bi bi-people"></i> Team Hub
+        </a>
 
-            @{
-                var isOwner = User.IsInRole("Owner");
-                var isAdmin = User.IsInRole("Admin");
-                var canManageWorkspace = isOwner || isAdmin;
-            }
+        @if (User.IsInRole("Owner") || User.IsInRole("Admin"))
+        {
+        <a class="nav-link @(IsActive("Workspace"))" asp-controller="Workspace" asp-action="Index">
+            <i class="bi bi-shield-lock"></i> Management
+        </a>
+        }
 
-            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Team" ? "active" : "")"
-               asp-controller="Team" asp-action="Index">
-                <i class="bi bi-people"></i> Team
-            </a>
+        <hr class="mx-4 my-4 opacity-10">
 
-            @if (canManageWorkspace)
-            {
-                <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Workspace" ? "active" : "")"
-                   asp-controller="Workspace" asp-action="Index">
-                    <i class="bi bi-building"></i> Workspace Management
-                </a>
-            }
+        <a class="nav-link @(IsActive("Profile"))" asp-controller="Profile" asp-action="Index">
+            <i class="bi bi-person-circle"></i> Profile
+        </a>
 
-
-            <hr class="mx-4 my-3 text-muted">
-
-            <!-- Settings -->
-            <a class="nav-link @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Settings" ? "active" : "")"
-               asp-controller="Settings" asp-action="Index">
-                <i class="bi bi-gear"></i> Settings
-            </a>
-
-        </nav>
-
-    </aside>
+        <a class="nav-link" href="javascript:void(0)" onclick="toggleTheme()">
+            <i class="bi bi-moon-stars"></i> Appearance
+        </a>
+    </nav>
+</aside>
 }
 
-<!-- ===== MAIN ===== -->
 <main class="main-content">
-
     @RenderBody()
 </main>
 
-<!-- Scripts -->
 <script src="~/lib/jquery/dist/jquery.min.js"></script>
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+    function toggleTheme() {
+        const body = document.body;
+        const currentTheme = body.getAttribute("data-theme");
+        const newTheme = currentTheme === "Light" ? "Dark" : "Light";
+
+        body.setAttribute("data-theme", newTheme);
+        document.cookie = "tf_theme=" + newTheme + ";path=/;max-age=" + (365 * 24 * 60 * 60);
+
+        // Optional: Reload or update UI icons if needed
+        location.reload();
+    }
+</script>
 
 @await RenderSectionAsync("Scripts", required: false)
 
 </body>
 </html>
+
+@functions {
+string IsActive(string controller) {
+return ViewContext.RouteData.Values["Controller"]?.ToString() == controller ? "active" : "";
+}
+}

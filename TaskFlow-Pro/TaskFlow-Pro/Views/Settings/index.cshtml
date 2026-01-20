@@ -3,109 +3,192 @@
     ViewData["Title"] = "Settings";
 }
 
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-xl-7 col-lg-9">
+<style>
+    /* Section specific styles */
+    .settings-container { color: var(--text-main); }
+    
+    .settings-card {
+        background: var(--card-bg);
+        border: 1px solid var(--sidebar-border);
+        transition: all 0.3s ease;
+    }
 
-            <h3 class="fw-bold mb-4">Settings</h3>
+    /* Adaptive Form Elements */
+    .settings-input {
+        background-color: var(--nav-hover) !important;
+        color: var(--text-main) !important;
+        border: 1px solid transparent !important;
+    }
 
-            <form method="post">
-                @Html.AntiForgeryToken()
+    .settings-input:focus {
+        background-color: var(--card-bg) !important;
+        border-color: var(--accent-primary) !important;
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15) !important;
+    }
 
-                <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+    .form-label-caps {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+    }
 
-                <!-- ===== ACCOUNT ===== -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3">Account</h6>
+    /* Switch Customization for Dark Mode */
+    .form-check-input:checked {
+        background-color: var(--accent-primary);
+        border-color: var(--accent-primary);
+    }
+    
+    [data-theme="Dark"] .form-check-input {
+        background-color: rgba(255,255,255,0.1);
+        border-color: rgba(255,255,255,0.2);
+    }
+</style>
 
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold">Username</label>
-                            <input asp-for="Username" class="form-control rounded-3" />
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label small fw-semibold">Email</label>
-                            <input asp-for="Email" class="form-control rounded-3" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ===== PREFERENCES ===== -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3">Preferences</h6>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Theme</label>
-                                <select asp-for="Theme" class="form-select rounded-3">
-                                    <option>Light</option>
-                                    <option>Dark</option>
-                                    <option>System</option>
-                                </select>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Default Calendar View</label>
-                                <select asp-for="CalendarView" class="form-select rounded-3">
-                                    <option>Month</option>
-                                    <option>Week</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-check form-switch mt-3">
-                            <input asp-for="CompactCalendar" class="form-check-input">
-                            <label class="form-check-label small">
-                                Enable compact calendar mode
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ===== NOTIFICATIONS ===== -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold mb-3">Notifications</h6>
-
-                        <div class="form-check">
-                            <input asp-for="EmailNotifications" class="form-check-input">
-                            <label class="form-check-label small">Email notifications</label>
-                        </div>
-
-                        <div class="form-check">
-                            <input asp-for="TaskAssignedNotification" class="form-check-input">
-                            <label class="form-check-label small">Task assignment alerts</label>
-                        </div>
-
-                        <div class="form-check">
-                            <input asp-for="DueDateReminder" class="form-check-input">
-                            <label class="form-check-label small">Due date reminders</label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ===== TEAM ===== -->
-                <div class="card border-0 shadow-sm rounded-4 mb-4">
-                    <div class="card-body p-4">
-                        <h6 class="fw-bold mb-2">Team</h6>
-                        <p class="text-muted small mb-0">
-                            @Model.TeamName ?? "You are not part of a team"
-                        </p>
-                    </div>
-                </div>
-
-                <button class="btn btn-primary rounded-3 fw-semibold px-4">
-                    Save Settings
-                </button>
-
-                @if (ViewBag.Success != null)
-                {
-                    <span class="text-success small ms-3">@ViewBag.Success</span>
-                }
-            </form>
-
+<div class="settings-container">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h3 class="fw-bold mb-0" style="letter-spacing: -0.02em;">Workspace Settings</h3>
+            <p class="text-muted small mb-0">Manage your account, display preferences, and alerts.</p>
         </div>
+        <i class="bi bi-gear-wide-pitched text-primary fs-2 opacity-25"></i>
     </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success border-0 shadow-sm rounded-4 mb-4 animate__animated animate__fadeIn">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Success"]
+        </div>
+    }
+
+    <form asp-action="Update" method="post" class="row g-4">
+        @Html.AntiForgeryToken()
+
+        <div class="col-lg-6">
+            <div class="card settings-card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h5 class="fw-bold m-0"><i class="bi bi-person-circle me-2 text-primary"></i>Account</h5>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="mb-4">
+                        <label class="form-label-caps mb-2">Display Name</label>
+                        <input asp-for="Username" class="form-control settings-input rounded-3 py-2" placeholder="e.g. Alex" />
+                    </div>
+
+                    <div class="mb-1">
+                        <label class="form-label-caps mb-2">Email Identity</label>
+                        <input asp-for="Email" class="form-control settings-input rounded-3 py-2 opacity-75" readonly />
+                        <div class="text-muted x-small mt-2">
+                            <i class="bi bi-info-circle me-1"></i> Managed by your workspace domain.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card settings-card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h5 class="fw-bold m-0"><i class="bi bi-palette me-2 text-primary"></i>Appearance</h5>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="mb-3">
+                        <label class="form-label-caps mb-2">Interface Theme</label>
+                        <select asp-for="Theme" class="form-select settings-input rounded-3 py-2">
+                            <option value="Light">Light Mode</option>
+                            <option value="Dark">Midnight Slate</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label-caps mb-2">Calendar Default</label>
+                        <select asp-for="DefaultCalendarView" class="form-select settings-input rounded-3 py-2">
+                            <option value="Month">Month View</option>
+                            <option value="Week">Week View</option>
+                            <option value="Day">Day View</option>
+                        </select>
+                    </div>
+
+                    <div class="form-check form-switch custom-switch">
+                        <input asp-for="CompactCalendarMode" class="form-check-input" />
+                        <label class="form-check-label small fw-medium" asp-for="CompactCalendarMode">
+                            Enable compact density
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card settings-card border-0 shadow-sm rounded-4">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h5 class="fw-bold m-0"><i class="bi bi-bell me-2 text-primary"></i>Notification Triggers</h5>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-4">
+                                <input asp-for="EmailNotifications" class="form-check-input" />
+                                <label class="form-check-label fw-medium" asp-for="EmailNotifications">Global email alerts</label>
+                                <div class="text-muted x-small">Receive weekly workspace summaries.</div>
+                            </div>
+                            <div class="form-check form-switch mb-4">
+                                <input asp-for="TaskAssignmentAlerts" class="form-check-input" />
+                                <label class="form-check-label fw-medium" asp-for="TaskAssignmentAlerts">Assignment pings</label>
+                                <div class="text-muted x-small">Instant alerts when tasks are deployed.</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mb-4">
+                                <input asp-for="DueDateReminders" class="form-check-input" />
+                                <label class="form-check-label fw-medium" asp-for="DueDateReminders">Deadline proximity</label>
+                                <div class="text-muted x-small">Alerts for tasks due within 24 hours.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card settings-card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-transparent border-0 pt-4 px-4">
+                    <h5 class="fw-bold m-0"><i class="bi bi-people me-2 text-primary"></i>Team</h5>
+                </div>
+                <div class="card-body px-4 pb-4">
+                    @if (!string.IsNullOrWhiteSpace(Model.TeamName))
+                    {
+                        <div class="p-3 rounded-3" style="background: var(--nav-hover);">
+                            <div class="fw-bold text-primary">@Model.TeamName</div>
+                            <div class="text-muted small">Active Member</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-2">
+                            <div class="text-muted small mb-3">No team membership found.</div>
+                            <a asp-controller="Team" asp-action="Index" class="btn btn-outline-primary w-100 rounded-3 fw-bold btn-sm">
+                                Find a Squad
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 mt-4">
+            <hr class="opacity-10 mb-4">
+            <div class="d-flex justify-content-end gap-3">
+                <button type="button" onclick="window.history.back()" class="btn btn-link text-muted text-decoration-none fw-bold">Discard Changes</button>
+                <button type="submit" class="btn btn-primary fw-bold px-5 py-3 rounded-3 shadow">
+                    Apply All Settings
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
+
+<style>
+    .x-small { font-size: 0.72rem; }
+</style>

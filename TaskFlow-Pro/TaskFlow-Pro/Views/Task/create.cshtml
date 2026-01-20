@@ -4,33 +4,73 @@
     ViewData["Title"] = "Create New Task";
 }
 
-<div class="d-flex align-items-center">
-    @if (User.Identity?.IsAuthenticated == true)
-    {
-        <span class="me-3 fw-medium">
-            Hello, @User.Identity.Name
-        </span>
-        <img src="https://ui-avatars.com/api/?name=@User.Identity.Name&background=0D6EFD&color=fff"
-             class="rounded-circle shadow-sm"
-             width="40" />
+<style>
+    /* Use layout variables for background and text */
+    .create-task-container {
+        color: var(--text-main);
     }
-</div>
-<div class="container py-5">
+
+    .form-card {
+        background: var(--card-bg);
+        border: 1px solid var(--sidebar-border);
+        border-radius: 20px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    /* Input styling that adapts to theme */
+    .theme-input {
+        background-color: var(--nav-hover) !important;
+        color: var(--text-main) !important;
+        border: 1px solid transparent !important;
+        transition: all 0.2s ease;
+    }
+
+    .theme-input:focus {
+        background-color: var(--card-bg) !important;
+        border-color: var(--accent-primary) !important;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.1) !important;
+    }
+
+    .form-label-caps {
+        font-size: 0.65rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+    }
+
+    /* Group styling for icons */
+    .input-group-text-theme {
+        background-color: var(--nav-hover) !important;
+        color: var(--text-muted);
+        border: none;
+    }
+
+    /* Dark mode specific tweaks for placeholders */
+    [data-theme="Dark"] .theme-input::placeholder {
+        color: rgba(255, 255, 255, 0.3);
+    }
+</style>
+
+<div class="container py-5 create-task-container">
     <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
+            
             <div class="mb-4 d-flex align-items-center justify-content-between">
                 <div>
-                    <a asp-action="Index" class="text-decoration-none text-muted small fw-medium mb-2 d-block">
-                        <i class="bi bi-arrow-left me-1"></i> Back to Dashboard
+                    <a asp-action="Index" class="text-decoration-none text-muted small fw-medium mb-2 d-inline-flex align-items-center">
+                        <i class="bi bi-arrow-left me-2"></i> Dashboard
                     </a>
-                    <h2 class="fw-bold text-slate-900 m-0">Create New Task</h2>
+                    <h2 class="fw-bold m-0" style="color: var(--text-main); letter-spacing: -0.02em;">Create Task</h2>
                 </div>
-                <div class="text-end">
-                    <span class="badge bg-primary-light text-primary px-3 py-2 rounded-pill">Drafting</span>
+                <div class="d-none d-sm-block">
+                    <span class="badge px-3 py-2 rounded-pill" style="background: rgba(13, 110, 253, 0.1); color: var(--accent-primary);">
+                        <i class="bi bi-pencil-square me-1"></i> New Entry
+                    </span>
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+            <div class="card form-card">
                 <div class="card-body p-4 p-md-5">
                     <form asp-action="Create" method="post">
                         @Html.AntiForgeryToken()
@@ -38,65 +78,59 @@
                         <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
 
                         <div class="mb-4">
-                            <label asp-for="Title" class="form-label text-uppercase fw-bold text-muted small" style="letter-spacing: 0.05em;">Task Title</label>
-                            <input asp-for="Title" class="form-control form-control-lg border-0 bg-light px-3"
-                                   placeholder="e.g., Design System Update" style="border-radius: 10px; font-size: 1rem;"/>
+                            <label asp-for="Title" class="form-label-caps mb-2">Project Title</label>
+                            <input asp-for="Title" class="form-control form-control-lg theme-input px-3"
+                                   placeholder="e.g., API Infrastructure Migration" style="border-radius: 12px; font-size: 1rem;"/>
                             <span asp-validation-for="Title" class="text-danger small"></span>
                         </div>
+
                         <div class="mb-4">
-                            <label asp-for="Description"
-                                   class="form-label text-uppercase fw-bold text-muted small"
-                                   style="letter-spacing: 0.05em;">
-                                Description
-                            </label>
-
-                            <textarea asp-for="Description"
-              class="form-control border-0 bg-light px-3"
-              rows="4"
-              placeholder="Describe the task..."
-              style="border-radius: 10px;"></textarea>
-
+                            <label asp-for="Description" class="form-label-caps mb-2">Objectives & Brief</label>
+                            <textarea asp-for="Description" class="form-control theme-input px-3"
+                                      rows="4" placeholder="Outline the requirements..."
+                                      style="border-radius: 12px;"></textarea>
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
-                        <div class="row g-3 mb-4">
+                        <div class="row g-3 mb-5">
                             <div class="col-sm-6">
-                                <label asp-for="StartDate" class="form-label text-uppercase fw-bold text-muted small" style="letter-spacing: 0.05em;">Start Date</label>
+                                <label asp-for="StartDate" class="form-label-caps mb-2">Commence Date</label>
                                 <div class="input-group">
-                                    <span class="input-group-text border-0 bg-light"><i class="bi bi-calendar-event"></i></span>
-                                    <input asp-for="StartDate" type="date" class="form-control border-0 bg-light" style="border-radius: 0 10px 10px 0;"/>
+                                    <span class="input-group-text input-group-text-theme" style="border-radius: 12px 0 0 12px;"><i class="bi bi-calendar-event"></i></span>
+                                    <input asp-for="StartDate" type="date" class="form-control theme-input" style="border-radius: 0 12px 12px 0;"/>
                                 </div>
                                 <span asp-validation-for="StartDate" class="text-danger small"></span>
                             </div>
                             <div class="col-sm-6">
-                                <label asp-for="EndDate" class="form-label text-uppercase fw-bold text-muted small" style="letter-spacing: 0.05em;">Due Date</label>
+                                <label asp-for="EndDate" class="form-label-caps mb-2">Deadline</label>
                                 <div class="input-group">
-                                    <span class="input-group-text border-0 bg-light"><i class="bi bi-calendar-check"></i></span>
-                                    <input asp-for="EndDate" type="date" class="form-control border-0 bg-light" style="border-radius: 0 10px 10px 0;"/>
+                                    <span class="input-group-text input-group-text-theme" style="border-radius: 12px 0 0 12px;"><i class="bi bi-calendar-check"></i></span>
+                                    <input asp-for="EndDate" type="date" class="form-control theme-input" style="border-radius: 0 12px 12px 0;"/>
                                 </div>
                                 <span asp-validation-for="EndDate" class="text-danger small"></span>
                             </div>
                         </div>
 
-
-
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary btn-lg shadow-sm fw-semibold"
-                                    style="background: var(--bs-primary); border: none; border-radius: 12px; padding: 12px;">
-                                Create Task
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm fw-bold"
+                                    style="border-radius: 14px; padding: 14px;">
+                                Deploy Task
                             </button>
-                            <button type="button" class="btn btn-link text-muted text-decoration-none small"
+                            <button type="button" class="btn btn-link text-muted text-decoration-none small py-2"
                                     onclick="window.history.back()">
-                                Cancel and discard
+                                Discard and close
                             </button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <p class="text-center text-muted small mt-4">
-                <i class="bi bi-info-circle me-1"></i> New tasks are automatically assigned to the current workspace.
-            </p>
+            <div class="d-flex align-items-center justify-content-center gap-2 mt-4 opacity-75">
+                <i class="bi bi-shield-check text-primary"></i>
+                <p class="text-muted small m-0">
+                    Visibility will be restricted to your current team.
+                </p>
+            </div>
         </div>
     </div>
 </div>

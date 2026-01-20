@@ -227,41 +227,37 @@ public class TaskService : ITaskService
     
     public async Task AssignTaskToTeamAsync(int taskId, int teamId, int workspaceId)
     {
-        // Load task WITH progresses so we can avoid duplicates
         var task = await _repo.GetTaskWithProgressAsync(taskId);
         if (task == null) throw new Exception("Task not found.");
 
-        // HARD SAFETY: task must be in same workspace
-        // If you have old tasks created before workspace support, they might be 0.
-        // Patch them once:
-        if (task.WorkspaceId == 0)
-            task.WorkspaceId = workspaceId;
-
+        // safety: workspace
         if (task.WorkspaceId != workspaceId)
-            throw new UnauthorizedAccessException("Cross-workspace assign blocked.");
+            throw new UnauthorizedAccessException("Task not in your workspace.");
 
-        // Team members inside same workspace
+        // attach to team
+        task.TeamId = teamId;
+        task.State  = State.Ongoing;
+
         var members = await _teamService.GetTeamMembersAsync(teamId, workspaceId);
 
-        task.TeamId = teamId;
-        task.State = State.Ongoing;
-
-        foreach (var member in members)
+        foreach (var m in members)
         {
-            bool exists = task.UserProgresses.Any(p => p.UserId == member.Id);
-            if (exists) continue;
+            // prevent duplicates
+            if (task.UserProgresses.Any(p => p.UserId == m.Id)) 
+                continue;
 
             task.UserProgresses.Add(new TaskUserProgress
             {
-                TaskItemId = task.Id,
-                UserId = member.Id,
-                WorkspaceId = workspaceId,   // ✅ ALWAYS USE workspaceId HERE
-                State = State.Ongoing
+                TaskItemId  = task.Id,
+                UserId      = m.Id,
+                WorkspaceId = task.WorkspaceId, // ✅ SUPER IMPORTANT
+                State       = State.Ongoing
             });
         }
 
-        await _repo.UpdateAsync(task); // Save everything
+        await _repo.SaveAsync(); // one SaveChanges
     }
+
 
 
     public async Task SaveAsync()

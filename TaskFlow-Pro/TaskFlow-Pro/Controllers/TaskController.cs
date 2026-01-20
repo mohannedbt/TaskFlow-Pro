@@ -40,7 +40,7 @@ namespace TaskFlow_Pro.Controllers
         // MY CREATED TASKS
         // =========================================================
         [HttpGet]
-        public async Task<IActionResult> MyTasks(TaskFilterViewModel filters, int page = 1)
+        public async Task<IActionResult> MyCreatedTasks(TaskFilterViewModel filters, int page = 1)
         {
             var (me, wsId) = await GetMeAndWorkspaceAsync();
 
@@ -54,7 +54,7 @@ namespace TaskFlow_Pro.Controllers
         // MY ASSIGNED TASKS (MODERN: FROM TaskUserProgress)
         // =========================================================
         [HttpGet]
-        public async Task<IActionResult> MyAssigned(TaskFilterViewModel filters, int page = 1)
+        public async Task<IActionResult> MyToDo(TaskFilterViewModel filters, int page = 1)
         {
             var (me, wsId) = await GetMeAndWorkspaceAsync();
 
@@ -68,22 +68,7 @@ namespace TaskFlow_Pro.Controllers
         // TEAM TASKS (LEADER VIEW)
         // =========================================================
         [HttpGet]
-        public async Task<IActionResult> TeamTasks(TaskFilterViewModel filters, int page = 1)
-        {
-            var (me, wsId) = await GetMeAndWorkspaceAsync();
-
-            if (me.TeamId == null)
-                return Forbid();
-
-            bool isLeader = await _teamService.IsTeamLeaderAsync(me.TeamId.Value, me.Id,wsId);
-            if (!isLeader)
-                return Forbid();
-
-            var tasks = await _taskService.GetAllTasksByTeamIdAsync(me.TeamId.Value, wsId);
-            tasks = await _taskService.ApplyFiltersAsync(tasks, filters);
-
-            return View("TaskList", await BuildViewModelAsync(tasks, filters, page, wsId));
-        }
+       
 
         // =========================================================
         // ASSIGN TASK TO TEAM (CREATOR)
@@ -181,7 +166,7 @@ namespace TaskFlow_Pro.Controllers
                 wsId // ✅ IMPORTANT (fixes FK workspace error)
             );
 
-            return RedirectToAction(nameof(MyTasks));
+            return RedirectToAction(nameof(MyCreatedTasks));
         }
 
         // =========================================================
@@ -194,7 +179,7 @@ namespace TaskFlow_Pro.Controllers
             var (me, wsId) = await GetMeAndWorkspaceAsync();
 
             if (model.TaskIds == null || !model.TaskIds.Any())
-                return RedirectToAction(nameof(MyTasks));
+                return RedirectToAction(nameof(MyCreatedTasks));
 
             foreach (var taskId in model.TaskIds)
             {
@@ -209,7 +194,7 @@ namespace TaskFlow_Pro.Controllers
                     await _taskService.ChangeTaskStateAsync(taskId, model.Action, me.Id);
             }
 
-            return RedirectToAction(nameof(MyTasks));
+            return RedirectToAction(nameof(MyCreatedTasks));
         }
 
         // =========================================================

@@ -2,114 +2,127 @@
 @using TaskFlow_Pro.Models
 
 @{
-    ViewData["Title"] = "Tasks";
-    int currentPage = ViewBag.CurrentPage ?? 1;
-    int totalPages  = ViewBag.TotalPages ?? 1;
-    string action   = ViewContext.RouteData.Values["action"]!.ToString()!;
+ViewData["Title"] = "Tasks";
+int currentPage = ViewBag.CurrentPage ?? 1;
+int totalPages  = ViewBag.TotalPages ?? 1;
+string action = ViewContext.RouteData.Values["action"]!.ToString()!;
+var isOwner = User.IsInRole("Owner");
+var isAdmin = User.IsInRole("Admin");
+var canCreateTask = isOwner || isAdmin;
+var canAssignTeam = isOwner || isAdmin;
 }
 
 <style>
-    /* Styling for the Navigation Pills */
+    /* Use variables for dynamic themes */
     .nav-pills .nav-link {
-        color: #64748b;
+        color: var(--text-muted);
         font-weight: 600;
         padding: 10px 20px;
         border-radius: 12px;
         transition: all 0.3s;
     }
     .nav-pills .nav-link.active {
-        background-color: #0d6efd;
+        background-color: var(--accent-primary);
+        color: #fff !important;
         box-shadow: 0 4px 12px rgba(13, 110, 253, 0.2);
     }
 
-    /* Filter Bar Styling */
     .filter-card {
-        background: #ffffff;
+        background: var(--card-bg);
         border-radius: 20px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid var(--sidebar-border);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
-    
+
     .form-label-tiny {
         font-size: 0.65rem;
         font-weight: 800;
-        text-uppercase: uppercase;
+        text-transform: uppercase;
         letter-spacing: 0.05em;
-        color: #475569;
+        color: var(--text-muted);
     }
 
-    /* Task Card Styling */
     .task-row {
-        background: #ffffff;
-        border: 1px solid #f1f5f9;
+        background: var(--card-bg);
+        border: 1px solid var(--sidebar-border);
         border-radius: 16px;
         transition: all 0.2s ease;
     }
     .task-row:hover {
-        border-color: #0d6efd;
+        border-color: var(--accent-primary);
         transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
 
-    /* Soft Badges */
-    .badge-soft {
-        padding: 6px 12px;
-        border-radius: 8px;
-        font-weight: 700;
-        font-size: 0.75rem;
+    /* Badge Overrides */
+    .badge-soft-secondary {
+        background: var(--nav-hover);
+        color: var(--text-main);
     }
-    .badge-soft-secondary { background: #f1f5f9; color: #475569; }
+
+    /* Dark Mode specific input fixes */
+    [data-theme="Dark"] .form-control,
+    [data-theme="Dark"] .form-select,
+    [data-theme="Dark"] .input-group-text {
+        background-color: rgba(255,255,255,0.05) !important;
+        border: none !important;
+        color: var(--text-main);
+    }
+
+    .bg-primary-soft { background: rgba(13, 110, 253, 0.12); }
+    .x-small { font-size: 0.72rem; }
+
+    /* Ensure title respects theme */
+    .text-title { color: var(--text-main); font-weight: 800; }
 </style>
+
 <div class="d-flex justify-content-between align-items-center mb-5">
     <div>
-        <h3 class="fw-bold text-dark mb-0" style="letter-spacing: -0.02em;">TaskFlow <span class="text-primary">Pro</span></h3>
+        <h3 class="fw-bold mb-0 text-title" style="letter-spacing: -0.02em;">
+            TaskFlow <span class="text-primary">Pro</span>
+        </h3>
         <p class="text-muted small mb-0">Workspace / @action</p>
     </div>
 
     <div class="dropdown">
-        <button class="btn d-flex align-items-center gap-3 bg-white border shadow-sm rounded-pill px-3 py-2 transition-hover" 
-                type="button" data-bs-toggle="dropdown" aria-expanded="false" style="border-color: #e2e8f0 !important;">
+        <button class="btn d-flex align-items-center gap-3 border shadow-sm rounded-pill px-3 py-2 transition-hover"
+                type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                style="border-color: var(--sidebar-border) !important; background: var(--card-bg);">
             <div class="text-end d-none d-sm-block">
-                <div class="fw-bold small text-slate-900 leading-tight">@User.Identity?.Name</div>
+                <div class="fw-bold small leading-tight" style="color: var(--text-main)">@User.Identity?.Name</div>
                 <div class="text-success fw-medium" style="font-size: 0.65rem;">
                     <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i> Active Now
                 </div>
             </div>
             <div class="position-relative">
                 <img src="https://ui-avatars.com/api/?name=@User.Identity?.Name&background=0D6EFD&color=fff"
-                     class="rounded-circle border border-2 border-white shadow-sm"
+                     class="rounded-circle border border-2 shadow-sm" style="border-color: var(--card-bg) !important;"
                      width="36" height="36" alt="Profile" />
-                <span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle" 
+                <span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle"
                       style="width: 10px; height: 10px; border-width: 2px !important;"></span>
             </div>
         </button>
-        
-        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 mt-2 p-2 animate__animated animate__fadeIn animate__faster" style="min-width: 200px;">
+
+        <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg rounded-4 mt-2 p-2 animate__animated animate__fadeIn animate__faster"
+            style="min-width: 200px; background: var(--bg-sidebar);">
             <li class="px-3 py-2 mb-1">
                 <span class="text-uppercase text-muted fw-bold" style="font-size: 0.6rem; letter-spacing: 0.05em;">Account</span>
             </li>
             <li>
-                <a class="dropdown-item rounded-3 py-2 small d-flex align-items-center" asp-controller="Profile" asp-action="Index">
+                <a class="dropdown-item rounded-3 py-2 small d-flex align-items-center" asp-controller="Profile" asp-action="Index" style="color: var(--text-main)">
                     <i class="bi bi-person-gear fs-5 me-2 text-primary"></i>
                     <div>
                         <span class="d-block fw-bold">My Profile</span>
-                        <span class="text-muted" style="font-size: 0.7rem;">Settings & Preferences</span>
+                        <span class="text-muted" style="font-size: 0.7rem;">Settings</span>
                     </div>
                 </a>
             </li>
-            <li>
-                <a class="dropdown-item rounded-3 py-2 small d-flex align-items-center" href="#">
-                    <i class="bi bi-shield-check fs-5 me-2 text-muted"></i>
-                    <span class="fw-medium">Security</span>
-                </a>
-            </li>
-            <li><hr class="dropdown-divider opacity-50"></li>
+            <li><hr class="dropdown-divider opacity-10"></li>
             <li>
                 <form asp-controller="Account" asp-action="Logout" method="post">
                     @Html.AntiForgeryToken()
                     <button type="submit" class="dropdown-item rounded-3 py-2 small text-danger d-flex align-items-center fw-bold">
-                        <i class="bi bi-box-arrow-right fs-5 me-2"></i>
-                        Sign Out
+                        <i class="bi bi-box-arrow-right fs-5 me-2"></i> Sign Out
                     </button>
                 </form>
             </li>
@@ -119,87 +132,77 @@
 
 <div class="row g-3 mb-4">
     <div class="col-md-4">
-        <div class="p-3 bg-white border rounded-4 shadow-sm d-flex align-items-center gap-3">
+        <div class="card p-3 border-0 rounded-4 shadow-sm d-flex flex-row align-items-center gap-3" style="background: var(--card-bg);">
             <div class="bg-primary-soft text-primary rounded-3 p-2">
                 <i class="bi bi-list-task fs-4"></i>
             </div>
             <div>
-                <span class="text-muted small d-block">Total Tasks</span>
-                <span class="fw-bold h5 mb-0">@Model.TaskItems?.Count</span>
+                <span class="text-muted small d-block">Load Capacity</span>
+                <span class="fw-bold h5 mb-0" style="color: var(--text-main)">@Model.TaskItems?.Count Tasks</span>
             </div>
         </div>
     </div>
-    </div>
+</div>
+
 <div class="d-flex justify-content-between align-items-center mb-4">
     <ul class="nav nav-pills gap-2">
-        <li class="nav-item"><a class="nav-link @(action=="MyTasks"?"active":"")" asp-action="MyTasks">My Tasks</a></li>
-        <li class="nav-item"><a class="nav-link @(action=="MyAssigned"?"active":"")" asp-action="MyAssigned">Assigned</a></li>
-        <li class="nav-item"><a class="nav-link @(action=="TeamTasks"?"active":"")" asp-action="TeamTasks">Team View</a></li>
+        @if (canCreateTask)
+        {
+        <li class="nav-item">
+            <a class="nav-link @(action=="MyCreatedTasks" ? "active" : "")" asp-action="MyCreatedTasks">Created</a>
+        </li>
+        }
+        <li class="nav-item">
+            <a class="nav-link @(action=="MyToDo" ? "active" : "")" asp-action="MyToDo">To-Do List</a>
+        </li>
     </ul>
 
-    <div class="d-flex gap-3 align-items-center">
-        <div class="text-end d-none d-md-block">
-            <span class="text-muted small d-block">System Load</span>
-            <span class="fw-bold text-primary">@Model.TaskItems?.Count Tasks</span>
-        </div>
-        <a asp-action="Create" class="btn btn-primary rounded-3 px-3 shadow-sm fw-bold">
-            <i class="bi bi-plus-lg me-1"></i> Create Task
-        </a>
-    </div>
+    @if (canCreateTask)
+    {
+    <a asp-action="Create" class="btn btn-primary rounded-3 px-3 shadow-sm fw-bold">
+        <i class="bi bi-plus-lg me-1"></i> New Task
+    </a>
+    }
 </div>
 
 <div class="card filter-card mb-4">
     <div class="card-body p-4">
-        <form asp-action="@action" method="get" id="filterForm">
+        <form asp-action="@action" method="get">
             <div class="row g-3 align-items-end">
-                
-                <div class="col-lg-3 col-md-6">
-                    <label class="form-label-tiny mb-1 d-block">Keywords</label>
+                <div class="col-lg-3">
+                    <label class="form-label-tiny mb-1 d-block">Search</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
-                        <input name="Q" value="@Model.Filters.Q" class="form-control bg-light border-0" placeholder="Find a task..." />
+                        <span class="input-group-text border-0"><i class="bi bi-search"></i></span>
+                        <input name="Q" value="@Model.Filters.Q" class="form-control" placeholder="Task name..." />
                     </div>
                 </div>
 
-                <div class="col-lg-2 col-md-3">
-                    <label class="form-label-tiny mb-1 d-block">Status</label>
-                    <select name="State" class="form-select bg-light border-0">
-                        <option value="">All Statuses</option>
-                        @foreach (State s in Enum.GetValues(typeof(State))) {
-                            <option value="@s" selected="@(Model.Filters.State == s)">@s</option>
+                <div class="col-lg-2">
+                    <label class="form-label-tiny mb-1 d-block">State</label>
+                    <select name="State" class="form-select">
+                        <option value="">All</option>
+                        @foreach (State s in Enum.GetValues(typeof(State)))
+                        {
+                        <option value="@s" selected="@(Model.Filters.State == s)">@s</option>
                         }
                     </select>
                 </div>
 
-                <div class="col-lg-2 col-md-3">
+                <div class="col-lg-2">
                     <label class="form-label-tiny mb-1 d-block">Timeline</label>
-                    <select name="Range" id="rangeSelect" class="form-select bg-light border-0">
+                    <select name="Range" id="rangeSelect" class="form-select">
                         <option value="">Any Time</option>
                         <option value="today" selected="@(Model.Filters.Range=="today")">Today</option>
                         <option value="week" selected="@(Model.Filters.Range=="week")">This Week</option>
-                        <option value="custom" selected="@(Model.Filters.Range=="custom")">Custom Range</option>
+                        <option value="custom" selected="@(Model.Filters.Range=="custom")">Custom</option>
                     </select>
                 </div>
 
-                <div id="customDateFields" class="col-lg-3 d-flex gap-2 @(Model.Filters.Range == "custom" ? "" : "d-none")">
-                    <div class="flex-fill">
-                        <label class="form-label-tiny mb-1 d-block">From</label>
-                        <input type="date" name="From" value="@(Model.Filters.From?.ToString("yyyy-MM-dd"))" class="form-control bg-light border-0" />
-                    </div>
-                    <div class="flex-fill">
-                        <label class="form-label-tiny mb-1 d-block">To</label>
-                        <input type="date" name="To" value="@(Model.Filters.To?.ToString("yyyy-MM-dd"))" class="form-control bg-light border-0" />
-                    </div>
-                </div>
-
                 <div class="col text-end">
-                    <div class="form-check form-switch mb-2 d-inline-block me-3">
-                        <input class="form-check-input" type="checkbox" name="OnlyUnassigned" value="true"
-                               checked="@Model.Filters.OnlyUnassigned" id="onlyUnassignedCheck" />
-                        <label class="form-check-label small text-muted" for="onlyUnassignedCheck">Unassigned</label>
-                    </div>
-                    <button type="submit" class="btn btn-dark px-4 rounded-3 fw-bold">Apply</button>
-                    <a asp-action="@action" class="btn btn-outline-light border text-dark ms-1 rounded-3"><i class="bi bi-arrow-counterclockwise"></i></a>
+                    <button type="submit" class="btn btn-primary px-4 rounded-3 fw-bold">Apply</button>
+                    <a asp-action="@action" class="btn btn-outline-secondary ms-1 rounded-3">
+                        <i class="bi bi-arrow-counterclockwise"></i>
+                    </a>
                 </div>
             </div>
         </form>
@@ -207,126 +210,62 @@
 </div>
 
 <div class="task-container d-flex flex-column gap-2">
-@foreach (var task in Model.TaskItems)
-{
-    var myState = Model.MyStates.ContainsKey(task.Id) ? Model.MyStates[task.Id] : null;
+    @foreach (var task in Model.TaskItems ?? new List<TaskItem>())
+    {
+    var myState = (Model.MyStates != null && Model.MyStates.ContainsKey(task.Id)) ? Model.MyStates[task.Id] : null;
 
     <div class="task-row p-3">
         <div class="row align-items-center">
             <div class="col-md-5 d-flex align-items-center gap-3">
-                <input type="checkbox" name="TaskIds" value="@task.Id" form="bulkForm" class="form-check-input mt-0" />
+                <input type="checkbox" class="form-check-input mt-0" />
                 <div>
-                    <span class="fw-bold d-block text-slate-900">@task.Title</span>
-                    <span class="text-muted x-small">Modified @task.StartDate.ToString("MMM dd")</span>
+                    <span class="fw-bold d-block" style="color: var(--text-main)">@task.Title</span>
+                    <span class="text-muted x-small">Ends @task.EndDate.ToString("MMM dd, yyyy")</span>
                 </div>
             </div>
 
-            <div class="col-md-2 text-center d-flex flex-column gap-1 align-items-center">
+            <div class="col-md-2 text-center">
                 <span class="badge-soft badge-soft-secondary">@task.State</span>
-
-                @* ✅ show my state if exists *@
-                @if (myState.HasValue)
-                {
-                    <span class="badge bg-info text-dark" style="font-size:0.7rem;">
-                        My: @myState.Value
-                    </span>
-                }
             </div>
 
             <div class="col-md-5 d-flex justify-content-end align-items-center gap-2">
-                @if (task.State == State.NotAssigned)
+                @if (task.State == State.NotAssigned && action == "MyCreatedTasks" && canAssignTeam)
                 {
-                    <form asp-controller="Task" asp-action="AssignToTeam" method="post" class="d-flex gap-2">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="taskId" value="@task.Id" />
-                        <select name="teamId" class="form-select form-select-sm border-0 bg-light" style="width: 140px;" required>
-                            <option value="" disabled selected>Assign Team...</option>
-                            @foreach (var team in Model.Teams)
-                            {
-                                <option value="@team.Id">@team.Name</option>
-                            }
-                        </select>
-                        <button class="btn btn-primary btn-sm rounded-2 px-3 fw-bold">Deploy</button>
-                    </form>
+                <form asp-action="AssignToTeam" method="post" class="d-flex gap-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="taskId" value="@task.Id" />
+                    <select name="teamId" class="form-select form-select-sm" style="width: 140px;" required>
+                        <option value="">Select Team</option>
+                        @foreach (var team in Model.Teams ?? new List<Team>()) {
+                        <option value="@team.Id">@team.Name</option>
+                        }
+                    </select>
+                    <button class="btn btn-primary btn-sm rounded-2 fw-bold">Deploy</button>
+                </form>
                 }
                 else
                 {
-                    @* ✅ MEMBER buttons affect my progress *@
-                    <form asp-action="SetMyState" method="post" class="d-inline-flex gap-2">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="taskId" value="@task.Id" />
-
-                        @* If user has no progress row yet, treat as Ongoing UI *@
-                        @if (!myState.HasValue || myState.Value == State.Ongoing)
-                        {
-                            <button name="newState" value="@State.Interrupted"
-                                    class="btn btn-outline-warning btn-sm px-3 rounded-2 fw-bold">
-                                Pause
-                            </button>
-                            <button name="newState" value="@State.Completed"
-                                    class="btn btn-success btn-sm px-3 rounded-2 fw-bold">
-                                Done
-                            </button>
-                        }
-                        else if (myState.Value == State.Interrupted)
-                        {
-                            <button name="newState" value="@State.Ongoing"
-                                    class="btn btn-primary btn-sm px-3 rounded-2 fw-bold">
-                                Resume
-                            </button>
-                            @* No cancel for members in modern default *@
-                        }
-                        else if (myState.Value == State.Completed)
-                        {
-                            <button name="newState" value="@State.Ongoing"
-                                    class="btn btn-outline-primary btn-sm px-3 rounded-2 fw-bold">
-                                Reopen
-                            </button>
-                        }
-                    </form>
-
-                    @* ✅ Optional leader-only global cancel (still your old ChangeState) *@
-                    @* Keep it if you want leaders to cancel tasks for everyone *@
-                    <form asp-action="ChangeState" method="post" class="d-inline-flex">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="taskId" value="@task.Id" />
-                        <button name="newState" value="@State.Canceled"
-                                class="btn btn-outline-danger btn-sm px-3 rounded-2 fw-bold">
-                            Cancel
-                        </button>
-                    </form>
+                <form asp-action="SetMyState" method="post" class="d-inline-flex gap-2">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="taskId" value="@task.Id" />
+                    @if (!myState.HasValue || myState.Value == State.Ongoing) {
+                    <button type="submit" name="newState" value="@State.Completed" class="btn btn-success btn-sm px-3 rounded-2 fw-bold">Done</button>
+                    } else {
+                    <button type="submit" name="newState" value="@State.Ongoing" class="btn btn-outline-primary btn-sm px-3 rounded-2 fw-bold">Resume</button>
+                    }
+                </form>
                 }
             </div>
         </div>
     </div>
-}
-
+    }
 </div>
 
-@if (totalPages > 1)
-{
-    <nav class="mt-5">
-        <ul class="pagination justify-content-center">
-            @for (int i = 1; i <= totalPages; i++)
-            {
-                <li class="page-item @(i==currentPage?"active":"")">
-                    <a class="page-link border-0 mx-1 rounded-3" asp-action="@action" asp-route-page="@i">@i</a>
-                </li>
-            }
-        </ul>
-    </nav>
-}
-
 @section Scripts {
-    <script>
-        // Toggle visibility of custom date fields based on range selection
-        document.getElementById('rangeSelect').addEventListener('change', function() {
-            const dateFields = document.getElementById('customDateFields');
-            if (this.value === 'custom') {
-                dateFields.classList.remove('d-none');
-            } else {
-                dateFields.classList.add('d-none');
-            }
-        });
-    </script>
+<script>
+    // Fix for dynamic date fields
+    document.getElementById('rangeSelect')?.addEventListener('change', function() {
+        // Add custom logic if needed
+    });
+</script>
 }
