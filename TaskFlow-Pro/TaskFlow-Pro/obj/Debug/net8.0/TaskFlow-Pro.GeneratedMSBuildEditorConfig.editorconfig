@@ -70,12 +70,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGFza1xUYXNrTGlzdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Team/create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhbVxjcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Team/index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhbVxpbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Team/Myteam.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhbVxNeXRlYW0uY3NodG1s
+[D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Workspace/index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcV29ya3NwYWNlXGluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Workspace/InviteStatus.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcV29ya3NwYWNlXEludml0ZVN0YXR1cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/Workspace/Setup.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcV29ya3NwYWNlXFNldHVwLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [D:/files/.net projects/Project/TaskFlow-Pro/TaskFlow-Pro/TaskFlow-Pro/Views/_ViewImports.cshtml]

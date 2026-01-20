@@ -1,0 +1,164 @@
+﻿@model TaskFlow_Pro.Models.WorkspaceViewModel
+@{
+    ViewData["Title"] = "Workspace Setup";
+    Layout = "_Layout_Empty";
+}
+
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light p-3">
+    <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-3 mb-2 shadow-sm"
+                 style="width: 48px; height: 48px;">
+                <i class="bi bi-building fs-3"></i>
+            </div>
+            <h3 class="fw-bold text-dark mb-0">Create Workspace</h3>
+            <p class="text-muted small mb-0">Enterprise configuration (Owner only)</p>
+        </div>
+
+        <div class="card border shadow-sm rounded-4">
+            <div class="card-body p-4 p-md-5">
+
+                <h5 class="fw-bold mb-1 text-dark">Workspace Details</h5>
+                <p class="text-muted small mb-4">Set your company rules once. You can edit later.</p>
+
+                <form asp-controller="Workspace" asp-action="Setup" method="post" id="workspaceSetupForm">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 small rounded-3 mb-4"></div>
+
+                    <!-- Workspace Name -->
+                    <div class="mb-3">
+                        <label asp-for="WorkspaceName"
+                               class="form-label small fw-bold text-uppercase text-muted"
+                               style="font-size: 0.65rem; letter-spacing: 0.08em;">
+                            Workspace Name
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-pencil-square text-muted"></i>
+                            </span>
+                            <input asp-for="WorkspaceName"
+                                   class="form-control bg-light border-start-0 ps-0"
+                                   placeholder="Enterprise X" />
+                        </div>
+                        <span asp-validation-for="WorkspaceName" class="text-danger x-small mt-1 d-block"></span>
+                    </div>
+
+                    <!-- Max Members -->
+                    <div class="mb-3">
+                        <label asp-for="MaxMembers"
+                               class="form-label small fw-bold text-uppercase text-muted"
+                               style="font-size: 0.65rem; letter-spacing: 0.08em;">
+                            Max Members
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-people text-muted"></i>
+                            </span>
+                            <input asp-for="MaxMembers"
+                                   type="number"
+                                   min="1"
+                                   class="form-control bg-light border-start-0 ps-0"
+                                   placeholder="50" />
+                        </div>
+                        <span asp-validation-for="MaxMembers" class="text-danger x-small mt-1 d-block"></span>
+                        <div class="form-text small text-muted">
+                            Limit how many users can join this workspace.
+                        </div>
+                    </div>
+
+                    <!-- Email Domain Rule -->
+                    <div class="mb-4">
+                        <label asp-for="EmailRule"
+                               class="form-label small fw-bold text-uppercase text-muted"
+                               style="font-size: 0.65rem; letter-spacing: 0.08em;">
+                            Allowed Email Domain
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0">
+                                <i class="bi bi-envelope-at text-muted"></i>
+                            </span>
+                            <input asp-for="EmailRule"
+                                   class="form-control bg-light border-start-0 ps-0"
+                                   placeholder="@@x.com" />
+                        </div>
+                        <span asp-validation-for="EmailRule" class="text-danger x-small mt-1 d-block"></span>
+
+                        <div class="form-text small text-muted">
+                            Users can join only if their email ends exactly with this domain.
+                            Example: <code>@("@x.com")</code>
+                        </div>
+
+                        <div class="alert alert-info border-0 rounded-3 small mt-3 mb-0">
+                            <div class="d-flex gap-2 align-items-start">
+                                <i class="bi bi-info-circle mt-1"></i>
+                                <div>
+                                    <div class="fw-bold">Tip</div>
+                                    <div>
+                                        If you set <code>@("@company.com")</code>, then only emails like
+                                        <code>name@company.com</code> can join.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="setupBtn"
+                            class="btn btn-primary w-100 py-2 fw-bold rounded-3 shadow-sm transition-hover">
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        Create Workspace
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <p class="small text-muted mb-0">
+                        Changed your mind?
+                        <a asp-controller="Account" asp-action="Register"
+                           class="fw-bold text-primary text-decoration-none border-bottom border-primary border-2 pb-1 ms-1">
+                            Back to Register
+                        </a>
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <p class="text-muted" style="font-size: 0.7rem; opacity: 0.8;">
+                &copy; @DateTime.Now.Year TaskFlow Pro Dashboard System
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .x-small { font-size: 0.72rem; font-weight: 500; }
+    .transition-hover:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15) !important;
+        transition: all 0.25s ease;
+    }
+    .input-group-text { border-color: #e9ecef; }
+    .form-control { border-color: #e9ecef; }
+    .form-control:focus {
+        background-color: #fff !important;
+        border-color: #86b7fe;
+        box-shadow: none;
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Form Loading Animation
+        document.getElementById('workspaceSetupForm').addEventListener('submit', function () {
+            if ($(this).valid()) {
+                const btn = document.getElementById('setupBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating...';
+            }
+        });
+    </script>
+}

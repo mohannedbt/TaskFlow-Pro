@@ -54,5 +54,20 @@ namespace TaskFlow_Pro.Repositories.Implementations
             _context.Teams.Remove(team);
             await _context.SaveChangesAsync();
         }
+        public async Task<List<Team>> GetAllByWorkspaceAsync(int workspaceId)
+        {
+            return await _context.Teams
+                .Where(t => t.WorkspaceId == workspaceId)
+                .Include(t => t.Members)
+                .ToListAsync();
+        }
+
+        public async Task<Team?> GetByIdInWorkspaceAsync(int teamId, int workspaceId)
+        {
+            return await _context.Teams
+                .Include(t => t.Members)
+                .FirstOrDefaultAsync(t => t.Id == teamId && t.WorkspaceId == workspaceId);
+        }
+
     }
 }

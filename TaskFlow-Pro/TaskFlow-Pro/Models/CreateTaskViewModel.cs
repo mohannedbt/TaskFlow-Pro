@@ -17,5 +17,7 @@ namespace TaskFlow_Pro.Models
 
         [DataType(DataType.Date)]
         public DateTime EndDate { get; set; }
+        [Required]
+        public int wsId {get; set;}
     }
 }

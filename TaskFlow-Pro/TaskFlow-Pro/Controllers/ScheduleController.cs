@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using TaskFlow_Pro.Models;
 using TaskFlow_Pro.Services.Interfaces;
@@ -9,28 +10,38 @@ namespace TaskFlow_Pro.Controllers
     public class ScheduleController : Controller
     {
         private readonly ITaskService _taskService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public ScheduleController(ITaskService taskService)
+        public ScheduleController(
+            ITaskService taskService,
+            UserManager<ApplicationUser> userManager)
         {
             _taskService = taskService;
+            _userManager = userManager;
         }
 
         // =========================
         // CALENDAR PAGE
         // =========================
         [HttpGet]
-        public IActionResult Index()
-        {
-            return View();
-        }
+        public IActionResult Index() => View();
 
         // =========================
         // EVENTS FOR CALENDAR (JSON)
+        // Workspace-scoped
         // =========================
         [HttpGet]
         public async Task<IActionResult> GetEvents()
         {
-            var tasks = await _taskService.GetAllTasks();
+            var me = await _userManager.GetUserAsync(User);
+            if (me == null) return Unauthorized();
+            if (me.WorkspaceId == null) return Forbid();
+
+            // Option A (recommended): add a service method
+            // var tasks = await _taskService.GetAllTasksInWorkspaceAsync(me.WorkspaceId.Value);
+
+            // Option B (quick fix): reuse existing method then filter (less ideal)
+            var tasks = await _taskService.GetAllTasks(me.WorkspaceId);
 
             var events = tasks.Select(t => new
             {

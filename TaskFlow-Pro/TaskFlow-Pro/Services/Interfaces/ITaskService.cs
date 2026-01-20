@@ -1,52 +1,32 @@
 ﻿using TaskFlow_Pro.Models;
 
-namespace TaskFlow_Pro.Services.Interfaces;
-
 public interface ITaskService
 {
-    // =========================
-    // CREATE
-    // =========================
     Task<TaskItem> CreateTaskAsync(
         string title,
         string description,
         string creatorUserId,
         DateTime startDate,
-        DateTime endDate);
-    
+        DateTime endDate,
+        int workspaceId);
 
-    // =========================
-    // ASSIGNMENT
-    // =========================
-    Task AssignTaskToTeamAsync(int taskId, int teamId);
+    Task AssignTaskToTeamAsync(int taskId, int teamId, int workspaceId);
 
-    // =========================
-    // STATE
-    // =========================
-    Task ChangeTaskStateAsync(
-        int taskId,
-        State newState,
-        string userId);
+    Task ChangeTaskStateAsync(int taskId, State newState, string userId);
+    Task SetMyProgressStateAsync(int taskId, string userId, int workspaceId, State newState);
 
-    // =========================
-    // QUERIES
-    // =========================
-    Task<List<TaskItem>> GetAllTasksByCreatorIDAsync(string userId);
-    Task<List<TaskItem>> GetAllTasksByAssignedIdAsync(string userId);
-    Task<List<TaskItem>> GetAllTasksByTeamIdAsync(int teamId);
-    Task<TaskItem> GetAllTasksByTaskIdAsync(int taskId);
-    Task<List<TaskItem>> GetAllTasks();
+    Task<List<TaskItem>> GetAllTasksByCreatorIDAsync(string userId, int workspaceId);
+    Task<List<TaskItem>> GetAllTasksByAssignedIdAsync(string userId, int workspaceId);
+    Task<List<TaskItem>> GetAllTasksByTeamIdAsync(int teamId, int workspaceId);
+    Task<TaskItem?> GetAllTasksByTaskIdAsync(int taskId, int workspaceId);
+
+    Task<List<TaskItem>> GetAllTasks(int workspaceId);
+
     Task<List<TaskItem>> ApplyFiltersAsync(List<TaskItem> tasks, TaskFilterViewModel f);
-    Task SetMyProgressStateAsync(int taskId, string userId, State newState);
-    Task RecomputeTaskStateAsync(int taskId);
-    Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId);
 
+    Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId, int workspaceId);
     Task<State?> GetMyStateAsync(int taskId, string userId);
-
-
-
-
-
-
+    Task AddProgressAsync(TaskUserProgress progress);
+    Task SaveAsync();
 
 }

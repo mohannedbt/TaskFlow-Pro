@@ -13,4 +13,6 @@ public class TaskUserProgress
     public State State { get; set; } = State.Ongoing;
 
     public DateTime? CompletedAt { get; set; }
+    public int WorkspaceId { get; set; }
+    public Workspace Workspace { get; set; } = null!;
 }

@@ -9,8 +9,8 @@
             bool isTeamLeader = false)
         {
             bool isAssignedUser =
-                task.AssignedUsers != null &&
-                task.AssignedUsers.Any(u => u.Id == userId);
+                task.UserProgresses != null &&
+                task.UserProgresses.Any(u => u.UserId == userId);
 
             bool isCreator = task.CreatedById == userId;
 

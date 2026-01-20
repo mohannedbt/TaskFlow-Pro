@@ -22,7 +22,8 @@ public class TaskService : ITaskService
         string description,
         string creatorUserId,
         DateTime startDate,
-        DateTime endDate)
+        DateTime endDate,
+        int workspaceId)
     {
         var task = new TaskItem
         {
@@ -31,7 +32,8 @@ public class TaskService : ITaskService
             StartDate = startDate,
             EndDate = endDate,
             CreatedById = creatorUserId,
-            State = State.NotAssigned
+            State = State.NotAssigned,
+            WorkspaceId = workspaceId // ✅ critical
         };
 
         await _repo.AddAsync(task);
@@ -39,22 +41,8 @@ public class TaskService : ITaskService
     }
 
 
-    public async Task AssignTaskToTeamAsync(int taskId, int teamId)
-    {
-        var task = await _repo.GetByIdAsync(taskId);
-        if (task == null) return;
 
-        var members = await _teamService.GetTeamMembersAsync(teamId);
 
-        foreach (var member in members)
-        {
-            if (!task.AssignedUsers.Any(u => u.Id == member.Id))
-                task.AssignedUsers.Add(member);
-        }
-
-        task.State = State.Ongoing;
-        await _repo.UpdateAsync(task);
-    }
 
     public async Task ChangeTaskStateAsync(
         int taskId,
@@ -140,14 +128,14 @@ public class TaskService : ITaskService
 
         return Task.FromResult(q.ToList());
     }
-    public async Task SetMyProgressStateAsync(int taskId, string userId, State newState)
+    public async Task SetMyProgressStateAsync(int taskId, string userId, int workspaceId, State newState)
     {
-        // Make sure task exists + load progress
         var task = await _repo.GetTaskWithProgressAsync(taskId);
         if (task == null) throw new Exception("Task not found.");
 
-        // Optionally: user must belong to the task's team
-        // (depends on your rules)
+        // ✅ Safety: prevent cross-workspace access
+        if (task.WorkspaceId != workspaceId)
+            throw new UnauthorizedAccessException("Task is not in your workspace.");
 
         var progress = await _repo.GetProgressAsync(taskId, userId);
 
@@ -157,8 +145,10 @@ public class TaskService : ITaskService
             {
                 TaskItemId = taskId,
                 UserId = userId,
+                WorkspaceId = workspaceId,   // ✅ ALWAYS SET
                 State = State.Ongoing
             };
+
             await _repo.AddProgressAsync(progress);
         }
 
@@ -168,6 +158,13 @@ public class TaskService : ITaskService
         await _repo.SaveAsync();
         await RecomputeTaskStateAsync(taskId);
     }
+
+    public async Task AddProgressAsync(TaskUserProgress progress)
+    {
+        await _repo.AddProgressAsync(progress);
+    }
+
+
 
     public async Task RecomputeTaskStateAsync(int taskId)
     {
@@ -210,5 +207,66 @@ public class TaskService : ITaskService
 
     public Task<State?> GetMyStateAsync(int taskId, string userId)
         => _repo.GetMyStateAsync(taskId, userId);
+    public Task<List<TaskItem>> GetAllTasksByCreatorIDAsync(string id, int workspaceId)
+        => _repo.GetAllByCreatorInWorkspaceAsync(id, workspaceId);
+
+    public Task<List<TaskItem>> GetAllTasksByAssignedIdAsync(string id, int workspaceId)
+        => _repo.GetTasksAssignedToUserInWorkspaceAsync(id, workspaceId);
+
+    public Task<List<TaskItem>> GetAllTasksByTeamIdAsync(int teamId, int workspaceId)
+        => _repo.GetAllByTeamInWorkspaceAsync(teamId, workspaceId);
+
+    public Task<TaskItem?> GetAllTasksByTaskIdAsync(int taskId, int workspaceId)
+        => _repo.GetByIdInWorkspaceAsync(taskId, workspaceId);
+
+    public Task<List<TaskItem>> GetAllTasks(int workspaceId)
+        => _repo.GetAllInWorkspaceAsync(workspaceId);
+
+    public Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId, int workspaceId)
+        => _repo.GetTasksAssignedToUserInWorkspaceAsync(userId, workspaceId);
+    
+    public async Task AssignTaskToTeamAsync(int taskId, int teamId, int workspaceId)
+    {
+        // Load task WITH progresses so we can avoid duplicates
+        var task = await _repo.GetTaskWithProgressAsync(taskId);
+        if (task == null) throw new Exception("Task not found.");
+
+        // HARD SAFETY: task must be in same workspace
+        // If you have old tasks created before workspace support, they might be 0.
+        // Patch them once:
+        if (task.WorkspaceId == 0)
+            task.WorkspaceId = workspaceId;
+
+        if (task.WorkspaceId != workspaceId)
+            throw new UnauthorizedAccessException("Cross-workspace assign blocked.");
+
+        // Team members inside same workspace
+        var members = await _teamService.GetTeamMembersAsync(teamId, workspaceId);
+
+        task.TeamId = teamId;
+        task.State = State.Ongoing;
+
+        foreach (var member in members)
+        {
+            bool exists = task.UserProgresses.Any(p => p.UserId == member.Id);
+            if (exists) continue;
+
+            task.UserProgresses.Add(new TaskUserProgress
+            {
+                TaskItemId = task.Id,
+                UserId = member.Id,
+                WorkspaceId = workspaceId,   // ✅ ALWAYS USE workspaceId HERE
+                State = State.Ongoing
+            });
+        }
+
+        await _repo.UpdateAsync(task); // Save everything
+    }
+
+
+    public async Task SaveAsync()
+    {
+        await _repo.SaveAsync();
+    }
 }
 

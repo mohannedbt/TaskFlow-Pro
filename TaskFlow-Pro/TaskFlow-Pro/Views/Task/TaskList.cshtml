@@ -236,7 +236,7 @@
             <div class="col-md-5 d-flex justify-content-end align-items-center gap-2">
                 @if (task.State == State.NotAssigned)
                 {
-                    <form asp-action="AssignToTeam" method="post" class="d-flex gap-2">
+                    <form asp-controller="Task" asp-action="AssignToTeam" method="post" class="d-flex gap-2">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="taskId" value="@task.Id" />
                         <select name="teamId" class="form-select form-select-sm border-0 bg-light" style="width: 140px;" required>

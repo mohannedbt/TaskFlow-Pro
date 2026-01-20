@@ -33,14 +33,14 @@ public class TaskRepository : ITaskRepository
     public async Task<TaskItem?> GetByIdAsync(int taskId)
     {
         return await _context.Tasks
-            .Include(t => t.AssignedUsers)
+            .Include(t => t.UserProgresses)
             .FirstOrDefaultAsync(t => t.Id == taskId);
     }
 
     public async Task<List<TaskItem>> GetAllAsync()
     {
         return await _context.Tasks
-            .Include(t => t.AssignedUsers)
+            .Include(t => t.UserProgresses)
             .ToListAsync();
     }
 
@@ -48,7 +48,7 @@ public class TaskRepository : ITaskRepository
     {
         return await _context.Tasks
             .Where(t => t.CreatedById == userId)
-            .Include(t => t.AssignedUsers)
+            .Include(t => t.UserProgresses)
             .ToListAsync();
     }
 
@@ -119,5 +119,46 @@ public class TaskRepository : ITaskRepository
             .Select(p => (State?)p.State)
             .FirstOrDefaultAsync();
     }
+    public async Task<TaskItem?> GetByIdInWorkspaceAsync(int taskId, int workspaceId)
+    {
+        return await _context.Tasks
+            .Include(t => t.UserProgresses)
+            .FirstOrDefaultAsync(t => t.Id == taskId && t.WorkspaceId == workspaceId);
+    }
+
+    public async Task<List<TaskItem>> GetAllInWorkspaceAsync(int workspaceId)
+    {
+        return await _context.Tasks
+            .Where(t => t.WorkspaceId == workspaceId)
+            .Include(t => t.UserProgresses)
+            .ToListAsync();
+    }
+
+    public async Task<List<TaskItem>> GetAllByCreatorInWorkspaceAsync(string userId, int workspaceId)
+    {
+        return await _context.Tasks
+            .Where(t => t.CreatedById == userId && t.WorkspaceId == workspaceId)
+            .Include(t => t.UserProgresses)
+            .ToListAsync();
+    }
+
+    public async Task<List<TaskItem>> GetAllByTeamInWorkspaceAsync(int teamId, int workspaceId)
+    {
+        return await _context.Tasks
+            .Where(t => t.TeamId == teamId && t.WorkspaceId == workspaceId)
+            .Include(t => t.UserProgresses)
+            .ToListAsync();
+    }
+
+    public async Task<List<TaskItem>> GetTasksAssignedToUserInWorkspaceAsync(string userId, int workspaceId)
+    {
+        return await _context.TaskUserProgresses
+            .Where(p => p.UserId == userId && p.TaskItem.WorkspaceId == workspaceId)
+            .Select(p => p.TaskItem)
+            .Distinct()
+            .Include(t => t.UserProgresses)
+            .ToListAsync();
+    }
+
 
 }

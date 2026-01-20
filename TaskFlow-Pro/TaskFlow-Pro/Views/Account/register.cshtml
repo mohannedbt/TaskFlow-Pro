@@ -43,6 +43,28 @@
                         </div>
                         <span asp-validation-for="Email" class="text-danger x-small mt-1 d-block"></span>
                     </div>
+                    <div class="mb-3">
+                        <label asp-for="Role" class="form-label small fw-bold text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.08em;">
+                            Role
+                        </label>
+                        <select asp-for="Role" class="form-select bg-light">
+                            <option value="Owner">Owner (Create Workspace)</option>
+                            <option value="Admin">Admin (Invite Required)</option>
+                            <option value="Member">Member (Invite Required)</option>
+                        </select>
+                        <span asp-validation-for="Role" class="text-danger x-small mt-1 d-block"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="InviteCode" class="form-label small fw-bold text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.08em;">
+                            Invite Code (Admin/Member)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0"><i class="bi bi-link-45deg text-muted"></i></span>
+                            <input asp-for="InviteCode" class="form-control bg-light border-start-0 ps-0" placeholder="Paste invite code if you have one" />
+                        </div>
+                        <span asp-validation-for="InviteCode" class="text-danger x-small mt-1 d-block"></span>
+                    </div>
 
                     <div class="mb-3">
                         <label asp-for="Password" class="form-label small fw-bold text-uppercase text-muted" style="font-size: 0.65rem; letter-spacing: 0.08em;"></label>

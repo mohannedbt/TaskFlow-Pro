@@ -9,5 +9,8 @@ public class Comment
     public DateTime UpdatedAt {get; set;}
     public ApplicationUser CreatedBy {get; set;}
     public TaskItem ToTaskItem {get; set;}
+    public int WorkspaceId { get; set; }
+    public Workspace Workspace { get; set; } = null!;
+    
     
 }

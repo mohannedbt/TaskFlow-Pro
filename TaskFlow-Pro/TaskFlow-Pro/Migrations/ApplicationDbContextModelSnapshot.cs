@@ -199,9 +199,6 @@ namespace TaskFlow_Pro.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("TaskItemId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("TeamId")
                         .HasColumnType("int");
 
@@ -212,6 +209,9 @@ namespace TaskFlow_Pro.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("varchar(256)");
 
+                    b.Property<int>("WorkspaceId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("NormalizedEmail")
@@ -221,9 +221,9 @@ namespace TaskFlow_Pro.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
-                    b.HasIndex("TaskItemId");
-
                     b.HasIndex("TeamId");
+
+                    b.HasIndex("WorkspaceId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -252,11 +252,16 @@ namespace TaskFlow_Pro.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<int>("WorkspaceId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedById");
 
                     b.HasIndex("ToTaskItemId");
+
+                    b.HasIndex("WorkspaceId");
 
                     b.ToTable("Comments");
                 });
@@ -283,11 +288,81 @@ namespace TaskFlow_Pro.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("WorkspaceId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("LeaderId");
 
+                    b.HasIndex("WorkspaceId");
+
                     b.ToTable("Teams");
+                });
+
+            modelBuilder.Entity("TaskFlow_Pro.Models.Workspace", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("EmailPattern")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("MaxMembers")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Workspaces");
+                });
+
+            modelBuilder.Entity("TaskFlow_Pro.Models.WorkspaceInvite", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("RoleToGrant")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("Used")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("WorkspaceId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("WorkspaceId");
+
+                    b.ToTable("WorkspaceInvites");
                 });
 
             modelBuilder.Entity("TaskItem", b =>
@@ -322,11 +397,16 @@ namespace TaskFlow_Pro.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("WorkspaceId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CreatedById");
 
                     b.HasIndex("TeamId");
+
+                    b.HasIndex("WorkspaceId");
 
                     b.ToTable("Tasks");
                 });
@@ -352,9 +432,14 @@ namespace TaskFlow_Pro.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(255)");
 
+                    b.Property<int>("WorkspaceId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("WorkspaceId");
 
                     b.HasIndex("TaskItemId", "UserId")
                         .IsUnique();
@@ -415,16 +500,20 @@ namespace TaskFlow_Pro.Migrations
 
             modelBuilder.Entity("TaskFlow_Pro.Models.ApplicationUser", b =>
                 {
-                    b.HasOne("TaskItem", null)
-                        .WithMany("AssignedUsers")
-                        .HasForeignKey("TaskItemId");
-
                     b.HasOne("TaskFlow_Pro.Models.Team", "Team")
                         .WithMany("Members")
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("TaskFlow_Pro.Models.Workspace", "Workspace")
+                        .WithMany("Users")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Team");
+
+                    b.Navigation("Workspace");
                 });
 
             modelBuilder.Entity("TaskFlow_Pro.Models.Comment", b =>
@@ -439,9 +528,17 @@ namespace TaskFlow_Pro.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TaskFlow_Pro.Models.Workspace", "Workspace")
+                        .WithMany()
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("CreatedBy");
 
                     b.Navigation("ToTaskItem");
+
+                    b.Navigation("Workspace");
                 });
 
             modelBuilder.Entity("TaskFlow_Pro.Models.Team", b =>
@@ -452,7 +549,26 @@ namespace TaskFlow_Pro.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("TaskFlow_Pro.Models.Workspace", "Workspace")
+                        .WithMany("Teams")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Leader");
+
+                    b.Navigation("Workspace");
+                });
+
+            modelBuilder.Entity("TaskFlow_Pro.Models.WorkspaceInvite", b =>
+                {
+                    b.HasOne("TaskFlow_Pro.Models.Workspace", "Workspace")
+                        .WithMany("Invites")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Workspace");
                 });
 
             modelBuilder.Entity("TaskItem", b =>
@@ -467,9 +583,17 @@ namespace TaskFlow_Pro.Migrations
                         .WithMany()
                         .HasForeignKey("TeamId");
 
+                    b.HasOne("TaskFlow_Pro.Models.Workspace", "Workspace")
+                        .WithMany("Tasks")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("CreatedBy");
 
                     b.Navigation("Team");
+
+                    b.Navigation("Workspace");
                 });
 
             modelBuilder.Entity("TaskUserProgress", b =>
@@ -486,9 +610,17 @@ namespace TaskFlow_Pro.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("TaskFlow_Pro.Models.Workspace", "Workspace")
+                        .WithMany("TaskUserProgresses")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("TaskItem");
 
                     b.Navigation("User");
+
+                    b.Navigation("Workspace");
                 });
 
             modelBuilder.Entity("TaskFlow_Pro.Models.ApplicationUser", b =>
@@ -501,10 +633,21 @@ namespace TaskFlow_Pro.Migrations
                     b.Navigation("Members");
                 });
 
+            modelBuilder.Entity("TaskFlow_Pro.Models.Workspace", b =>
+                {
+                    b.Navigation("Invites");
+
+                    b.Navigation("TaskUserProgresses");
+
+                    b.Navigation("Tasks");
+
+                    b.Navigation("Teams");
+
+                    b.Navigation("Users");
+                });
+
             modelBuilder.Entity("TaskItem", b =>
                 {
-                    b.Navigation("AssignedUsers");
-
                     b.Navigation("UserProgresses");
                 });
 #pragma warning restore 612, 618

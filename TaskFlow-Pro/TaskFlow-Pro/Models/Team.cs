@@ -17,4 +17,6 @@ public class Team
 
     // ===== Members (one team has many users) =====
     public ICollection<ApplicationUser> Members { get; set; } = new List<ApplicationUser>();
+    public int WorkspaceId { get; set; }
+    public Workspace Workspace { get; set; } = null!;
 }

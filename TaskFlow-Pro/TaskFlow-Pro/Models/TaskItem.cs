@@ -19,10 +19,11 @@ public class TaskItem
     public Team? Team { get; set; }
 
     // ✅ MANY-TO-MANY USERS
-    public ICollection<ApplicationUser> AssignedUsers { get; set; }
-        = new List<ApplicationUser>();
+
     public ICollection<TaskUserProgress> UserProgresses { get; set; } = new List<TaskUserProgress>();
 
 
     public State State { get; set; } = State.NotAssigned;
+    public int WorkspaceId { get; set; }
+    public Workspace Workspace { get; set; } = null!;
 }

@@ -1,7 +1,5 @@
 ﻿using TaskFlow_Pro.Models;
 
-namespace TaskFlow_Pro.Repositories.Interfaces;
-
 public interface ITaskRepository
 {
     Task AddAsync(TaskItem task);
@@ -9,16 +7,23 @@ public interface ITaskRepository
     Task DeleteAsync(TaskItem task);
 
     Task<TaskItem?> GetByIdAsync(int taskId);
+    Task<TaskItem?> GetByIdInWorkspaceAsync(int taskId, int workspaceId);
 
     Task<List<TaskItem>> GetAllAsync();
-    Task<List<TaskItem>> GetAllByCreator(string creatorId);
+    Task<List<TaskItem>> GetAllInWorkspaceAsync(int workspaceId);
+
+    Task<List<TaskItem>> GetAllByCreator(string userId);
+    Task<List<TaskItem>> GetAllByCreatorInWorkspaceAsync(string userId, int workspaceId);
+
+    Task<List<TaskItem>> GetAllByTeamInWorkspaceAsync(int teamId, int workspaceId);
+
+    Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId);
+    Task<List<TaskItem>> GetTasksAssignedToUserInWorkspaceAsync(string userId, int workspaceId);
+
     Task<TaskItem?> GetTaskWithProgressAsync(int taskId);
     Task<TaskUserProgress?> GetProgressAsync(int taskId, string userId);
     Task AddProgressAsync(TaskUserProgress progress);
     Task SaveAsync();
 
-    Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId); // modern "MyAssigned"
-    Task<List<TaskUserProgress>> GetProgressRowsForTaskAsync(int taskId);
     Task<State?> GetMyStateAsync(int taskId, string userId);
-
 }

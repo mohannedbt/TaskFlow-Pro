@@ -12,120 +12,131 @@ namespace TaskFlow_Pro.Controllers
         private readonly ITeamService _teamService;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public TeamController(
-            ITeamService teamService,
-            UserManager<ApplicationUser> userManager)
+        public TeamController(ITeamService teamService, UserManager<ApplicationUser> userManager)
         {
             _teamService = teamService;
             _userManager = userManager;
         }
 
-        // =========================
-        // LIST ALL TEAMS
-        // =========================
+        private bool CanManageTeams()
+            => User.IsInRole("Owner") || User.IsInRole("Admin");
+
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public IActionResult Create()
         {
-            var teams = await _teamService.GetAllTeamsAsync();
-            return View(teams);
+            if (!CanManageTeams()) return Forbid();
+            return View(new CreateTeamViewModel());
         }
 
-        // =========================
-        // MY TEAM
-        // =========================
-        [HttpGet]
-        public async Task<IActionResult> MyTeam()
-        {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return Unauthorized();
-
-            var team = await _teamService.GetTeamForUserAsync(user.Id);
-            return View(team);
-        }
-
-        // =========================
-        // CREATE TEAM
-        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(string name, string? description)
+        public async Task<IActionResult> Create(CreateTeamViewModel vm)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return Unauthorized();
+            if (!CanManageTeams()) return Forbid();
+
+            if (!ModelState.IsValid)
+                return View(vm);
+
+            var me = await _userManager.GetUserAsync(User);
+            if (me == null) return Unauthorized();
+            if (me.WorkspaceId == null) return Forbid();
 
             try
             {
-                await _teamService.CreateTeamAsync(name, description, user);
-                return RedirectToAction(nameof(MyTeam));
+                // NOTE: your current CreateTeamAsync forces leader to not be in a team
+                // and auto-joins him. That's ok for now; you'll patch service later
+                // to allow admin create without joining.
+                await _teamService.CreateTeamAsync(vm.Name.Trim(), vm.Description?.Trim(), me);
+
+                TempData["Success"] = "Team created successfully.";
+                return RedirectToAction("Index", "Workspace");
             }
             catch (Exception ex)
             {
                 TempData["Error"] = ex.Message;
-                return RedirectToAction(nameof(Index));
+                return View(vm);
             }
         }
+         private async Task<(ApplicationUser me, int wsId)> GetMeWs()
+        {
+            var me = await _userManager.GetUserAsync(User);
+            if (me == null) throw new UnauthorizedAccessException();
+            if (me.WorkspaceId == null) throw new UnauthorizedAccessException("No workspace");
+            return (me, me.WorkspaceId);
+        }
 
-        // =========================
-        // JOIN TEAM
-        // =========================
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var (me, wsId) = await GetMeWs();
+
+            var teams = await _teamService.GetAllTeamsAsync(wsId);
+
+            var myTeam = me.TeamId.HasValue
+                ? teams.FirstOrDefault(t => t.Id == me.TeamId.Value)
+                : null;
+
+            var leaderName = myTeam?.LeaderId != null
+                ? (await _userManager.FindByIdAsync(myTeam.LeaderId))?.UserName
+                : null;
+
+            var vm = new TeamHubViewModel
+            {
+                WorkspaceId = wsId,
+                MyTeamId = myTeam?.Id,
+                MyTeamName = myTeam?.Name,
+                MyTeamDescription = myTeam?.Description,
+                MyTeamLeaderName = leaderName,
+                Teams = teams.Select(t => new TeamCardVm
+                {
+                    TeamId = t.Id,
+                    Name = t.Name,
+                    Description = t.Description,
+                    MembersCount = t.Members?.Count ?? 0,
+                    IsMine = (me.TeamId == t.Id)
+                }).OrderBy(t => t.Name).ToList()
+            };
+
+            return View(vm);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Join(int teamId)
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return Unauthorized();
+            var (me, wsId) = await GetMeWs();
 
             try
             {
-                await _teamService.JoinTeamAsync(teamId, user);
-                return RedirectToAction(nameof(MyTeam));
+                await _teamService.JoinTeamAsync(teamId, me);
+                TempData["Success"] = "Joined team successfully.";
             }
             catch (Exception ex)
             {
                 TempData["Error"] = ex.Message;
-                return RedirectToAction(nameof(Index));
             }
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // =========================
-        // LEAVE TEAM
-        // =========================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Leave()
         {
-            var user = await _userManager.GetUserAsync(User);
-            if (user == null)
-                return Unauthorized();
+            var (me, wsId) = await GetMeWs();
 
             try
             {
-                await _teamService.LeaveTeamAsync(user);
-                return RedirectToAction(nameof(Index));
+                await _teamService.LeaveTeamAsync(me);
+                TempData["Success"] = "You left the team.";
             }
             catch (Exception ex)
             {
                 TempData["Error"] = ex.Message;
-                return RedirectToAction(nameof(MyTeam));
             }
-        }
 
-        // =========================
-        // REMOVE MEMBER (LEADER)
-        // =========================
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RemoveMember(int teamId, string memberId)
-        {
-            var leader = await _userManager.GetUserAsync(User);
-            if (leader == null)
-                return Unauthorized();
-
-            await _teamService.RemoveMemberAsync(teamId, memberId, leader.Id);
-            return RedirectToAction(nameof(MyTeam));
+            return RedirectToAction(nameof(Index));
         }
     }
+    
 }

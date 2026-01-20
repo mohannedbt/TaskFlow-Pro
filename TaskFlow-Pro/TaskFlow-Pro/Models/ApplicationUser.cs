@@ -11,5 +11,7 @@ public class ApplicationUser : IdentityUser
     // Navigation
     public Team? Team { get; set; }
     public ICollection<TaskUserProgress> TaskProgresses { get; set; } = new List<TaskUserProgress>();
+    public int WorkspaceId { get; set; }
+    public Workspace Workspace { get; set; } = null!;
 
 }

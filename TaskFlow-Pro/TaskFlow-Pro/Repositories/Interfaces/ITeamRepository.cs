@@ -11,5 +11,11 @@ namespace TaskFlow_Pro.Repositories.Interfaces
         Task AddAsync(Team team);
         Task UpdateAsync(Team team);
         Task DeleteAsync(Team team);
+        Task<List<Team>> GetAllByWorkspaceAsync(int workspaceId);
+
+        Task<Team?> GetByIdInWorkspaceAsync(int teamId, int workspaceId);
+        
+
+
     }
 }

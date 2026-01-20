@@ -4,38 +4,17 @@ namespace TaskFlow_Pro.Services.Interfaces
 {
     public interface ITeamService
     {
-        // =========================
-        // READ
-        // =========================
-        Task<List<Team>> GetAllTeamsAsync();
-        Task<Team?> GetTeamByIdAsync(int id);
+        Task<List<Team>> GetAllTeamsAsync(int workspaceId);
+        Task<Team?> GetTeamByIdAsync(int teamId, int workspaceId);
         Task<Team?> GetTeamForUserAsync(string userId);
-        Task<List<ApplicationUser>> GetTeamMembersAsync(int teamId);
+        Task<List<ApplicationUser>> GetTeamMembersAsync(int teamId, int workspaceId);
 
-        // =========================
-        // CREATE / JOIN / LEAVE
-        // =========================
-        Task<Team> CreateTeamAsync(
-            string name,
-            string? description,
-            ApplicationUser leader);
-
+        Task<Team> CreateTeamAsync(string name, string? description, ApplicationUser leader);
         Task JoinTeamAsync(int teamId, ApplicationUser user);
         Task LeaveTeamAsync(ApplicationUser user);
 
-        // =========================
-        // LEADER ACTIONS
-        // =========================
-        Task RemoveMemberAsync(
-            int teamId,
-            string memberId,
-            string leaderId);
-
-        Task TransferLeadershipAsync(
-            int teamId,
-            string newLeaderId,
-            string currentLeaderId);
-
-        Task<bool> IsTeamLeaderAsync(int? teamId, string userId);
+        Task RemoveMemberAsync(int teamId, string memberId, string leaderId, int workspaceId);
+        Task TransferLeadershipAsync(int teamId, string newLeaderId, string currentLeaderId, int workspaceId);
+        Task<bool> IsTeamLeaderAsync(int teamId, string userId, int workspaceId);
     }
 }
