@@ -22,12 +22,10 @@ namespace TaskFlow_Pro.Services
 
             // Base query Tasks in workspace & period (StartDate as period filter)
             var tasksQ = _db.Tasks
-                .AsNoTracking()
-                .Where(t => t.WorkspaceId == workspaceId && t.StartDate >= fromDate && t.StartDate <= toDate);
-
-            var totalTasks = await tasksQ.CountAsync();
-            var completedTasks = await tasksQ.CountAsync(t => t.State == State.Completed);
-            var activeTasks = await tasksQ.CountAsync(t => t.State != State.Completed);
+                .AsNoTracking().ToList() ;
+            var totalTasks = tasksQ.Count();
+            var completedTasks = tasksQ.Count(t => t.State == State.Completed);
+            var activeTasks = tasksQ.Count(t => t.State != State.Completed);
 
             // Avg completion time based on user progress completedAt - task.StartDate
             var avgCompletionHours = await _db.TaskUserProgresses
@@ -43,7 +41,7 @@ namespace TaskFlow_Pro.Services
             avgCompletionHours = avgCompletionHours / 60.0;
 
             // Daily completed tasks (by TaskItem.State == Completed, grouped by EndDate day)
-            var daily = await tasksQ
+            var daily = await _db.Tasks
                 .Where(t => t.State == State.Completed)
                 .GroupBy(t => t.EndDate.Date)
                 .Select(g => new DailyCompletedPoint { Day = g.Key, Count = g.Count() })
@@ -51,7 +49,7 @@ namespace TaskFlow_Pro.Services
                 .ToListAsync();
 
             // Team velocity (completed tasks per team)
-            var teamVelocity = await tasksQ
+            var teamVelocity = await _db.Tasks
                 .Where(t => t.State == State.Completed)
                 .GroupBy(t => new { t.TeamId, TeamName = t.Team != null ? t.Team.Name : "No Team" })
                 .Select(g => new TeamVelocityRow

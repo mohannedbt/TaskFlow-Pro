@@ -126,8 +126,11 @@
 </div>
 
 @section Scripts {
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+            console.log("Dashboard data:", @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model)));
+
         const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyCompleted.Select(x => x.Day.ToString("yyyy-MM-dd"))));
         const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyCompleted.Select(x => x.Count)));
 

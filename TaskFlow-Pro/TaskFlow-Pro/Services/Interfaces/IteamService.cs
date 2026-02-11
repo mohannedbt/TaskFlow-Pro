@@ -9,7 +9,7 @@ namespace TaskFlow_Pro.Services.Interfaces
         Task<Team?> GetTeamForUserAsync(string userId);
         Task<List<ApplicationUser>> GetTeamMembersAsync(int teamId, int workspaceId);
 
-        Task<Team> CreateTeamAsync(string name, string? description, ApplicationUser leader);
+        Task<Team> CreateTeamAsync(string name, string? description, ApplicationUser? leader);
         Task JoinTeamAsync(int teamId, ApplicationUser user);
         Task LeaveTeamAsync(ApplicationUser user);
 

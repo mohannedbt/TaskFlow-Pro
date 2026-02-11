@@ -11,6 +11,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<TaskUserProgress> TaskUserProgresses { get; set; } = null!;
     public DbSet<Workspace> Workspaces { get; set; }
     public DbSet<WorkspaceInvite>  WorkspaceInvites { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
+
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options){}

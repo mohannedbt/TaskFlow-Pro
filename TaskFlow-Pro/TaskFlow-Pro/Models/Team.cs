@@ -12,8 +12,8 @@ public class Team
     public DateTime Created { get; set; } = DateTime.UtcNow;
 
     // ===== Leader (one user leads a team) =====
-    public string LeaderId { get; set; } = null!;
-    public ApplicationUser Leader { get; set; } = null!;
+    public string? LeaderId { get; set; } = null!;
+    public ApplicationUser? Leader { get; set; } = null!;
 
     // ===== Members (one team has many users) =====
     public ICollection<ApplicationUser> Members { get; set; } = new List<ApplicationUser>();

@@ -152,10 +152,13 @@ public class TaskRepository : ITaskRepository
 
     public async Task<List<TaskItem>> GetTasksAssignedToUserInWorkspaceAsync(string userId, int workspaceId)
     {
-        return await _context.TaskUserProgresses
-            .Where(p => p.UserId == userId && p.WorkspaceId == workspaceId)
-            .Select(p => p.TaskItem)
-            .Distinct()
+        var teamId = await _context.Users
+            .Where(u => u.Id == userId)
+            .Select(u => u.TeamId)
+            .FirstOrDefaultAsync();
+        return await _context.Tasks.Where(t => t.WorkspaceId == workspaceId &&
+            (t.CreatedById == userId || t.UserProgresses.Any(p => p.UserId == userId) || t.TeamId == teamId))
+            .Include(t => t.UserProgresses)
             .ToListAsync();
     }
 
