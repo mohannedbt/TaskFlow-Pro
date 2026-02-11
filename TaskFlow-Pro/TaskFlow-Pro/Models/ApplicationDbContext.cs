@@ -12,6 +12,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Workspace> Workspaces { get; set; }
     public DbSet<WorkspaceInvite>  WorkspaceInvites { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<AuditLog> AuditLogs { get; set; } = default!;
+
 
 
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
@@ -78,6 +80,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .WithMany(w => w.TaskUserProgresses)
             .HasForeignKey(p => p.WorkspaceId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<AuditLog>()
+            .HasIndex(x => new { x.WorkspaceId, x.CreatedAtUtc });
+
 
     }
 
