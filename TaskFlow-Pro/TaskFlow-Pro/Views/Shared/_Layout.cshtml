@@ -167,6 +167,17 @@ var theme = Context.Request.Cookies["tf_theme"] ?? "Light";
         </a>
         }
 
+        @if (User.IsInRole("Owner") || User.IsInRole("Admin"))
+        {
+            <a class="nav-link @(IsActive("Dashboard"))"
+            asp-controller="Dashboard"
+            asp-action="Index"
+            asp-route-workspaceId="1">
+                <i class="bi bi-bar-chart-line"></i> Dashboard
+            </a>
+        }
+
+
         <hr class="mx-4 my-4 opacity-10">
 
         <a class="nav-link @(IsActive("Profile"))" asp-controller="Profile" asp-action="Index">
