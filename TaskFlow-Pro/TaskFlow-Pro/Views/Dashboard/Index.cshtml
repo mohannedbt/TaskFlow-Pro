@@ -1,0 +1,150 @@
+@model TaskFlow_Pro.ViewModels.Dashboard.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+    @if ((ViewBag.IsDummy as bool?) == true)
+    {
+        <div class="alert alert-warning mt-3">
+            <strong>⚠ Dummy Data:</strong> This dashboard is currently showing mock data for demo purposes.
+        </div>
+    }
+
+}
+
+<div class="d-flex gap-2 mt-2">
+    <a class="btn btn-sm btn-outline-info"
+       asp-controller="Dashboard"
+       asp-action="Index"
+       asp-route-workspaceId="@Model.WorkspaceId"
+       asp-route-days="30"
+       asp-route-mode="db">
+        Use DB Data
+    </a>
+
+    <a class="btn btn-sm btn-outline-warning"
+       asp-controller="Dashboard"
+       asp-action="Index"
+       asp-route-workspaceId="@Model.WorkspaceId"
+       asp-route-days="30"
+       asp-route-mode="dummy">
+        Use Dummy Data
+    </a>
+</div>
+
+
+<div class="container mt-4">
+    <h2>Dashboard — Workspace @Model.WorkspaceId</h2>
+    <p class="text-muted">From @Model.From.ToShortDateString() to @Model.To.ToShortDateString()</p>
+
+    <div class="row g-3 mt-2">
+        <div class="col-md-3">
+            <div class="card p-3">
+                <div class="fw-bold">Total Tasks</div>
+                <div class="fs-3">@Model.Kpis.TotalTasks</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3">
+                <div class="fw-bold">Completed</div>
+                <div class="fs-3">@Model.Kpis.CompletedTasks</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3">
+                <div class="fw-bold">Completion Rate</div>
+                <div class="fs-3">@Model.Kpis.CompletionRatePct %</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3">
+                <div class="fw-bold">Avg Completion (hrs)</div>
+                <div class="fs-3">@Model.Kpis.AvgCompletionHours</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mt-4 p-3">
+        <div class="fw-bold mb-2">Completed Tasks per Day</div>
+        <canvas id="completedChart" height="90"></canvas>
+    </div>
+
+    <div class="row mt-4 g-3">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="fw-bold mb-2">Team Velocity</div>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Team</th>
+                                <th>Completed</th>
+                                <th>Avg (hrs)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var r in Model.TeamVelocity)
+                        {
+                            <tr>
+                                <td>@r.TeamName</td>
+                                <td>@r.CompletedTasks</td>
+                                <td>@Math.Round(r.AvgCompletionHours, 2)</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card p-3">
+                <div class="fw-bold mb-2">Member Load</div>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Active</th>
+                                <th>Completed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var r in Model.MemberLoad)
+                        {
+                            <tr>
+                                <td>@r.UserName</td>
+                                <td>@r.ActiveAssignments</td>
+                                <td>@r.CompletedAssignments</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+            console.log("Dashboard data:", @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model)));
+
+        const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyCompleted.Select(x => x.Day.ToString("yyyy-MM-dd"))));
+        const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DailyCompleted.Select(x => x.Count)));
+
+        const ctx = document.getElementById('completedChart');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Completed Tasks',
+                    data: data,
+                    tension: 0.3
+                }]
+            }
+        });
+    </script>
+}

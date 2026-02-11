@@ -1,0 +1,47 @@
+@model List<TaskFlow_Pro.Models.Notification>
+@{
+    ViewData["Title"] = "Notifications";
+    var unread = (int?)ViewBag.UnreadCount ?? 0;
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>Notifications</h2>
+
+        <form asp-action="MarkAllRead" method="post">
+            <button class="btn btn-sm btn-outline-info" type="submit">
+                Mark all as read (@unread)
+            </button>
+        </form>
+    </div>
+
+    <div class="mt-3">
+        @if (!Model.Any())
+        {
+            <div class="alert alert-secondary">No notifications yet.</div>
+        }
+        else
+        {
+            foreach (var n in Model)
+            {
+                <div class="card p-3 mb-2 @(n.IsRead ? "" : "border border-info")">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <div class="fw-bold">@n.Title</div>
+                            <div class="text-muted">@n.Message</div>
+                            <small class="text-muted">@n.CreatedAt.ToLocalTime()</small>
+                        </div>
+
+                        @if (!n.IsRead)
+                        {
+                            <form asp-action="MarkRead" method="post">
+                                <input type="hidden" name="id" value="@n.Id" />
+                                <button class="btn btn-sm btn-outline-success" type="submit">Mark read</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>

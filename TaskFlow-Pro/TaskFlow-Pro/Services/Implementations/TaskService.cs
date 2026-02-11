@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Identity;
 using TaskFlow_Pro.Models;
 using TaskFlow_Pro.Repositories.Interfaces;
 using TaskFlow_Pro.Services.Interfaces;
@@ -9,12 +10,16 @@ public class TaskService : ITaskService
     private readonly ITaskRepository _repo;
     private readonly ITeamService _teamService;
 
+    private readonly INotificationService _notif;
+    
+
     public TaskService(
         ITaskRepository repo,
-        ITeamService teamService)
+        ITeamService teamService, INotificationService notif)
     {
         _repo = repo;
         _teamService = teamService;
+        _notif = notif;
     }
 
     public async Task<TaskItem> CreateTaskAsync(
@@ -156,6 +161,17 @@ public class TaskService : ITaskService
         progress.CompletedAt = (newState == State.Completed) ? DateTime.UtcNow : null;
 
         await _repo.SaveAsync();
+        await _notif.CreateAsync(new Notification
+        {
+            UserId = progress.UserId,
+            WorkspaceId = task.WorkspaceId,
+            TaskItemId = task.Id,
+            Type = NotificationType.TaskAssigned,
+            Title = "New task assigned",
+            Message = $"You were assigned to: {task.Title}"
+        });
+
+
         await RecomputeTaskStateAsync(taskId);
     }
 
@@ -202,8 +218,17 @@ public class TaskService : ITaskService
         await _repo.SaveAsync();
     }
 
-    public Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId)
-        => _repo.GetTasksAssignedToUserAsync(userId);
+    public async Task<List<TaskItem>> GetTasksAssignedToUserAsync(string userId)
+    {
+        var teamid= _repo.GetAllAsync().Result.Select(t=>t.TeamId).FirstOrDefault();
+        Console.WriteLine("The team id is :"+teamid);
+        if(teamid!=null)
+        {
+            System.Console.WriteLine(GetAllTasksByTeamIdAsync(teamid.Value));
+            return await GetAllTasksByTeamIdAsync(teamid.Value);
+        } 
+        return await Task.FromResult(new List<TaskItem>());
+    }
 
     public Task<State?> GetMyStateAsync(int taskId, string userId)
         => _repo.GetMyStateAsync(taskId, userId);
@@ -254,6 +279,21 @@ public class TaskService : ITaskService
                 State       = State.Ongoing
             });
         }
+        var assignedUserIds = members.Select(m => m.Id).ToList();
+
+        foreach (var uid in assignedUserIds)
+        {
+            await _notif.CreateAsync(new Notification
+            {
+                UserId = uid,
+                WorkspaceId = task.WorkspaceId,
+                TaskItemId = task.Id,
+                Type = NotificationType.TaskAssigned,
+                Title = "New task assigned",
+                Message = $"You were assigned to: {task.Title}"
+            });
+        }
+
 
         await _repo.SaveAsync(); // one SaveChanges
     }

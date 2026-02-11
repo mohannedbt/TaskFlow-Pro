@@ -38,9 +38,9 @@ namespace TaskFlow_Pro.Services.Implementations
         // =========================
         // CREATE TEAM
         // =========================
-        public async Task<Team> CreateTeamAsync(string name, string? description, ApplicationUser leader)
+        public async Task<Team> CreateTeamAsync(string name, string? description, ApplicationUser? leader)
         {
-            if (leader.WorkspaceId == null)
+            if (leader?.WorkspaceId == null)
                 throw new InvalidOperationException("User has no workspace.");
 
             if (leader.TeamId != null)
